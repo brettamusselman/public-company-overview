@@ -32,6 +32,25 @@ class Microlink_Client:
             logger.error(f"Error fetching URL: {response.status_code} - {response.text}")
             raise Exception(f"Error fetching URL: {response.status_code} - {response.text}")
         
+        logger.info(f"Fetched URL: {url}")
         return response
     
-    
+    def get_pdf(self, url: str) -> requests.Response:
+        """Fetches the PDF from the URL using Microlink API.
+        Args:
+            url (str): The URL to fetch.
+        Returns:
+            requests.Response: The response object from the API call.
+        """
+        params = {
+            'url': url,
+            'pdf': True
+        }
+        response = requests.get(self.api_url, headers=self.headers, params=params)
+        
+        if response.status_code != 200:
+            logger.error(f"Error fetching PDF: {response.status_code} - {response.text}")
+            raise Exception(f"Error fetching PDF: {response.status_code} - {response.text}")
+        
+        logger.info(f"Fetched PDF: {url}")
+        return response
