@@ -63,7 +63,7 @@ class Microlink_Client:
         logger.info(f"Fetched PDF: {url}")
         return response
     
-    def get_pdf_file(self, pdf_response: requests.Response) -> io.BytesIO.:
+    def get_pdf_file(self, pdf_response: requests.Response) -> io.BytesIO:
         """Saves the PDF response to a file in memory.
         Args:
             pdf_response (requests.Response): The response object from the API call.
