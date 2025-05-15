@@ -2,6 +2,7 @@ import requests #no sdk for python
 import numpy as np
 import pandas as pd
 import logging
+import io
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -54,3 +55,28 @@ class Microlink_Client:
         
         logger.info(f"Fetched PDF: {url}")
         return response
+    
+    def get_pdf_file(self, pdf_response: requests.Response) -> io.BytesIO.:
+        """Saves the PDF response to a file in memory.
+        Args:
+            pdf_response (requests.Response): The response object from the API call.
+        Returns:
+            io.BytesIO: The PDF file in memory.
+        """
+        if pdf_response.status_code != 200:
+            logger.error(f"Error fetching PDF file: {pdf_response.status_code} - {pdf_response.text}")
+            raise Exception(f"Error fetching PDF file: {pdf_response.status_code} - {pdf_response.text}")
+        
+        pdf_file = pdf_response.content['data']['pdf']['url']
+
+        #request the pdf file
+        pdf_file_response = requests.get(pdf_file)
+
+        if pdf_file_response.status_code != 200:
+            logger.error(f"Error fetching PDF file: {pdf_file_response.status_code} - {pdf_file_response.text}")
+            raise Exception(f"Error fetching PDF file: {pdf_file_response.status_code} - {pdf_file_response.text}")
+        
+        pdf_file = io.BytesIO(pdf_file_response.content)
+        
+        logger.info(f"PDF file saved in memory.")
+        return pdf_file
