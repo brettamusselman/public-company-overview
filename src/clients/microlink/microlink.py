@@ -9,6 +9,13 @@ logger.addHandler(logging.NullHandler())
 
 MICROLINK_URL = 'https://api.microlink.io'
 
+"""
+Next steps:
+- Add logic for parsing to different formats
+- Add tenacity retry logic
+- Potentially add schema validation/pydantic checks
+"""
+
 class Microlink_Client:
     def __init__(self, api_url: str = MICROLINK_URL):
         self.api_url = api_url

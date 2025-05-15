@@ -9,6 +9,14 @@ logger.addHandler(logging.NullHandler())
 
 SHODAN_URL = 'https://entitydb.shodan.io/api/'
 
+"""
+Next steps:
+- Add pagination support logic
+- Add parsing to dataframes logic
+- Add tenacity retry logic
+- Potentially add schema validation/pydantic checks use schemas.py file
+"""
+
 class Shodan_Client:
     def __init__(self, api_url: str = SHODAN_URL):
         self.api_url = api_url
