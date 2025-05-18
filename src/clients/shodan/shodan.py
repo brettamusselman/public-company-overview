@@ -18,8 +18,10 @@ Next steps:
 """
 
 class Shodan_Client:
-    def __init__(self, api_url: str = SHODAN_URL):
+    def __init__(self, api_url: str = SHODAN_URL, api_key: str = None):
         self.api_url = api_url
+        self.api_key = api_key
+        self.key_str = f"?key={self.api_key}"
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -30,7 +32,7 @@ class Shodan_Client:
         Returns:
             bool: True if the health check passed, False otherwise.
         """
-        response = requests.get(self.api_url + 'health_check', headers=self.headers)
+        response = requests.get(self.api_url + 'health_check' + self.key_str, headers=self.headers)
         
         if response.status_code != 200:
             logger.error(f"Health check failed: {response.status_code} - {response.text}")
@@ -50,7 +52,7 @@ class Shodan_Client:
                 'limit': 100,
                 'offset': i
             }
-            response = requests.get(f"{self.api_url}/entities", headers=self.headers, params=params)
+            response = requests.get(f"{self.api_url}/entities{self.key_str}", headers=self.headers, params=params)
             
             if response.status_code != 200:
                 logger.error(f"Error fetching entities: {response.status_code} - {response.text}")
@@ -66,7 +68,7 @@ class Shodan_Client:
         Returns:
             requests.Response: The response object from the API call.
         """
-        response = requests.get(f"{self.api_url}/entities/{entity_id}", headers=self.headers)
+        response = requests.get(f"{self.api_url}/entities/{entity_id}{self.key_str}", headers=self.headers)
         
         if response.status_code != 200:
             logger.error(f"Error fetching entity: {response.status_code} - {response.text}")
@@ -82,7 +84,7 @@ class Shodan_Client:
         Returns:
             requests.Response: The response object from the API call.
         """
-        response = requests.get(f"{self.api_url}/entities/symbol/{symbol}", headers=self.headers)
+        response = requests.get(f"{self.api_url}/entities/symbol/{symbol}{self.key_str}", headers=self.headers)
         
         if response.status_code != 200:
             logger.error(f"Error fetching entity: {response.status_code} - {response.text}")
