@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-FMP_URL = 'https://financialmodelingprep.com/stable/'
+FMP_URL = 'https://financialmodelingprep.com/api/v3/'
 
 class FMP_Client:
     def __init__(self, api_key: str):
@@ -15,7 +15,7 @@ class FMP_Client:
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
-        self.key_str = f"&apikey={self.api_key}"
+        self.key_str = f"apikey={self.api_key}"
     
     #not sure if the get_data function will actually standardize as a base function
     def _get_data(self, endpoint: str, params: dict = None) -> pd.DataFrame:
@@ -30,7 +30,7 @@ class FMP_Client:
             if params is None:
                 params = {}
             
-            url = f"{FMP_URL}{endpoint}{self.key_str}"
+            url = f"{FMP_URL}{endpoint}?{self.key_str}"
             response = requests.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
@@ -65,7 +65,7 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The income statement as a DataFrame.
         """
-        endpoint = f"income-statement?{symbol}"
+        endpoint = f"income-statement/{symbol}"
         
         return self._get_data(endpoint)
     
@@ -76,7 +76,7 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The key executives as a DataFrame.
         """
-        endpoint = f"key-executives?{symbol}"
+        endpoint = f"key-executives/{symbol}"
         
         return self._get_data(endpoint)
     
@@ -87,8 +87,7 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The executive compensation as a DataFrame.
         """
-        endpoint = f"governance-executive-compensation?{symbol}"
+        endpoint = f"governance-executive-compensation/{symbol}"
         
         return self._get_data(endpoint)
-    
     

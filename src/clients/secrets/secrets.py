@@ -5,8 +5,10 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+DEFAULT_PROJECT_ID = "public-company-overview"
+
 class Secret_Manager:
-    def __init__(self, project_id: str):
+    def __init__(self, project_id: str = DEFAULT_PROJECT_ID):
         self.project_id = project_id
         #Found this here: https://codelabs.developers.google.com/codelabs/secret-manager-python#5
         #Might be outdated
