@@ -52,7 +52,7 @@ class Shodan_Client:
                 'limit': 100,
                 'offset': i
             }
-            response = requests.get(f"{self.api_url}/entities{self.key_str}", headers=self.headers, params=params)
+            response = requests.get(f"{self.api_url}entities{self.key_str}", headers=self.headers, params=params)
             
             if response.status_code != 200:
                 logger.error(f"Error fetching entities: {response.status_code} - {response.text}")
@@ -61,6 +61,24 @@ class Shodan_Client:
             logger.info(f"Fetched entities: {i}-{i+100}")
             yield response
 
+    def all_entities_to_dataframe(self, limit=100) -> pd.DataFrame:
+        """Fetches all entities from the Shodan API and converts them to a DataFrame.
+        Args:
+            limit (int): The maximum number of entities to fetch.
+        Returns:
+            pd.DataFrame: A DataFrame containing all entities.
+        """
+        all_entities = []
+        for response in self.get_all_entities(limit):
+            json_data = response.json()
+            entities = json_data.get('entities', [])
+            all_entities.extend(entities)
+
+        #convert to dataframe
+        df = pd.DataFrame(entities)
+        logger.info(f"Converted {len(entities)} entities to DataFrame.")
+        return df
+
     def get_entity_from_id(self, entity_id: str) -> requests.Response:
         """Fetches a specific entity from the Shodan API using its ID.
         Args:
@@ -68,7 +86,7 @@ class Shodan_Client:
         Returns:
             requests.Response: The response object from the API call.
         """
-        response = requests.get(f"{self.api_url}/entities/{entity_id}{self.key_str}", headers=self.headers)
+        response = requests.get(f"{self.api_url}entities/{entity_id}{self.key_str}", headers=self.headers)
         
         if response.status_code != 200:
             logger.error(f"Error fetching entity: {response.status_code} - {response.text}")
@@ -84,7 +102,7 @@ class Shodan_Client:
         Returns:
             requests.Response: The response object from the API call.
         """
-        response = requests.get(f"{self.api_url}/entities/symbol/{symbol}{self.key_str}", headers=self.headers)
+        response = requests.get(f"{self.api_url}entities/symbol/{symbol}{self.key_str}", headers=self.headers)
         
         if response.status_code != 200:
             logger.error(f"Error fetching entity: {response.status_code} - {response.text}")
