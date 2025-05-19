@@ -31,17 +31,43 @@ class YF_Client:
             logger.error(f"Exception occurred while fetching data: {str(e)}")
             raise
 
-    def get_tickers(self) -> pd.DataFrame:
-        """Fetches the list of all available tickers.
+    def get_tickers_history(self, tickers: list, period: str, interval: str) -> pd.DataFrame:
+        """Fetches ticker history for multiple tickers
+        Args:
+            tickers (list): List of stock ticker symbols.
+            period (str): The period for the historical data (e.g., '1mo', '1y').
+            interval (str): The interval for the historical data (e.g., '1d', '1wk').
         Returns:
             pd.DataFrame: The list of tickers as a DataFrame.
         """
         try:
-            tickers = self.client.Tickers()
+            data = self.client.Tickers(tickers).history(period=period, interval=interval)
             logger.info("Fetched all available tickers")
-            return tickers
+            return data
         except Exception as e:
             logger.error(f"Exception occurred while fetching tickers: {str(e)}")
+            raise
+
+    def get_tickers_data(self, tickers: list, period: str, interval: str, start: str = None,
+                         end: str = None, auto_adjust: bool = True) -> pd.DataFrame:
+        """Fetches data for multiple tickers.
+        Args:
+            tickers (list): List of stock ticker symbols.
+            period (str): The period for the historical data (e.g., '1mo', '1y').
+            interval (str): The interval for the historical data (e.g., '1d', '1wk').
+            start (str): The start date for the historical data (YYYY-MM-DD).
+            end (str): The end date for the historical data (YYYY-MM-DD).
+            auto_adjust (bool): Whether to adjust the data for splits and dividends.
+        Returns:
+            pd.DataFrame: The historical data as a DataFrame.
+        """
+        try:
+            data = self.client.Tickers(tickers).download(period=period, interval=interval,
+                                                        start=start, end=end, auto_adjust=auto_adjust)
+            logger.info(f"Fetched data for tickers with period {period} and interval {interval}")
+            return data
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching tickers data: {str(e)}")
             raise
 
     def get_ticker_info(self, ticker: str) -> pd.DataFrame:
