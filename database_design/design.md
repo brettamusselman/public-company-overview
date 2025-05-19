@@ -28,3 +28,5 @@ Design:
                 - This should have the URL, entity ID, scraped date, scraped data, Microlink response, and pdf file path
 - The final step is the gold (or warehouse/mart) layer
     - We now conform the data into a conformed fact and dimension tables (i.e. no "fct_{table name}_{source system}" or "dim_{table name}_{source system}" but just "fct_{table name}" or "dim_{table name}")
+    - We should add a table called "manifest" this lists out, for fact tables, the type of data we have for which durations
+        - i.e. if we have daily data for last 2 years for AAPL from Polygon, but the user requests minute data for the past 2 years, we can say "sorry, we don't have that data" or "we can get that data for you but it will take a while"
