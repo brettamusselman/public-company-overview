@@ -5,6 +5,7 @@ Source files:
 
 Transformations/Dimensional Modeling:
 - We can do this with either a set of BigQuery scripts and orchestrate through Python or through Dataflow/Dataproc
+    - I am leaning towards using DBT because apparently the dbt-bigquery package is really mature
 
 Design:
 - Ingest from "pco-store" into a BigQuery dataset and add a prefix to each table with "raw_{table name}"
