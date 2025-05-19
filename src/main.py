@@ -69,7 +69,7 @@ def write_hist_ticker_yf(ticker: str, period: str, interval: str):
 
     # Set file name
     current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"{ticker}_{period}_{interval}_{current_time}.csv"
+    file_name = f"yfinance/hist_ticker/{ticker}_{period}_{interval}_{current_time}.csv"
     
     # Write to GCS
     storage_client.upload_object(file_name, data.to_csv(index=False), content_type='text/csv')
@@ -88,14 +88,39 @@ def write_microlink_pdf(url: str):
     # Set filename
     current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
     sanitized_url = re.sub(r'\W+', '_', url)  # Replace non-word chars with underscores
-    file_name = f"{sanitized_url}_{current_time}.pdf"
+    file_name = f"microlink/pdf/{sanitized_url}_{current_time}.pdf"
     
     # Write to GCS
     storage_client.upload_object(file_name, pdf_file, content_type='application/pdf')
+
+def write_microlink_text(url: str):
+    """Fetches text from a URL using Microlink and writes to GCS.
+    Args:
+        url (str): The URL to fetch the text from.
+    """
+    microlink_client = Microlink_Client()
+    storage_client = GCS_Client_Wrapper()
+
+    """
+    Add function to Microlink_Client that wraps around get_url and pulls out text or maybe csv of website.
+    """
+    
+    # Fetch text
+    response = microlink_client.get_url(url)
+    
+    # Set filename
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    sanitized_url = re.sub(r'\W+', '_', url)  # Replace non-word chars with underscores
+    file_name = f"microlink/text/{sanitized_url}_{current_time}.txt"
+    
+    # Write to GCS
+    storage_client.upload_object(file_name, response.text, content_type='text/plain')
 
 def write_entities():
     """
     This function should be the main dimension table for "entities" representing different public companies.
     Not sure which source system we should use for this yet. (shodan, polygon, yfinance, fmp?)
+    Also, we might want to handle CDC (change data capture) for this table.
+    Maybe includ source system and use all of the systems to get the data?
     """
     pass
