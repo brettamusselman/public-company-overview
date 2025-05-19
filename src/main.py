@@ -24,10 +24,11 @@ from src.clients.yfinance.yfinance import YF_Client
 from src.clients.fmp.fmp import FMP_Client
 from src.clients.microlink.microlink import Microlink_Client
 from src.clients.shodan.shodan import Shodan_Client
+from src.clients.polygon.polygon import Polygon_Wrapper
 
 #wrappers around GCP clients
-from src.clients.storage.storage import Storage_Client
-from src.clients.secrets.secrets import Secrets_Client
+from src.clients.storage.storage import GCS_Client_Wrapper
+from src.clients.secrets.secrets import Secret_Manager
 from src.clients.bq.bq import BQ_Client
 
 #define functions
@@ -42,7 +43,7 @@ def write_hist_prices(ticker: str, start: str, end: str, bucket_name: str, file_
         file_name (str): The file name to write to GCS.
     """
     yf_client = YF_Client()
-    storage_client = Storage_Client()
+    storage_client = GCS_Client_Wrapper()
     
     # Fetch historical data
     data = yf_client.get_data(ticker, start, end)
@@ -58,7 +59,7 @@ def write_microlink_pdf(url: str, bucket_name: str, file_name: str):
         file_name (str): The file name to write to GCS.
     """
     microlink_client = Microlink_Client()
-    storage_client = Storage_Client()
+    storage_client = GCS_Client_Wrapper()
     
     # Fetch PDF
     pdf_response = microlink_client.get_pdf(url)
