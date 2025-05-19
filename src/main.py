@@ -74,6 +74,41 @@ def write_hist_ticker_yf(ticker: str, period: str, interval: str):
     # Write to GCS
     storage_client.upload_object(file_name, data.to_csv(index=False), content_type='text/csv')
 
+def write_hist_ticker_polygon(ticker: str, start: str, end: str, timespan="day", multiplier=1, adjusted="true"):
+    """Fetches historical ticker data from Polygon and writes to GCS.
+    Args:
+        ticker (str): The stock ticker symbol.
+        start (str): The start date for the historical data (YYYY-MM-DD).
+        end (str): The end date for the historical data (YYYY-MM-DD).
+        timespan (str): The timespan to use (day, minute, hour, etc.).
+        multiplier (int): The multiplier to use with the timespan.
+        adjusted (str): Whether to use adjusted prices ("true" or "false").
+    """
+    # Get secret manager to retrieve the Polygon API key
+    secret_manager = Secret_Manager()
+    polygon_api_key = secret_manager.access_secret("polygon-api-key")
+    
+    # Initialize clients
+    polygon_client = Polygon_Wrapper(polygon_api_key)
+    storage_client = GCS_Client_Wrapper()
+    
+    # Fetch historical data
+    data = polygon_client.get_historical_data(
+        ticker=ticker,
+        start=start,
+        end=end,
+        timespan=timespan,
+        multiplier=multiplier,
+        adjusted=adjusted
+    )
+    
+    # Set file name
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"polygon/hist_ticker/{ticker}_{start}_{end}_{timespan}_{multiplier}_{current_time}.csv"
+    
+    # Write to GCS
+    storage_client.upload_object(file_name, data.to_csv(index=False), content_type='text/csv')
+
 def write_microlink_pdf(url: str):
     """Fetches a PDF from a URL using Microlink and writes to GCS.
     Args:
