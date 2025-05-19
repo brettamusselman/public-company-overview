@@ -9,8 +9,12 @@ from io import BytesIO
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+DEFAULT_PROJECT = "public-company-overview"
+#should dataset just be pco_dataset without the prefix?
+DEFAULT_DATASET = "public-company-overview.pco_dataset"
+
 class BQ_Client:
-    def __init__(self, project_id: str, dataset_id: str):
+    def __init__(self, project_id: str = DEFAULT_PROJECT, dataset_id: str = DEFAULT_DATASET):
         self.client = bigquery.Client(project=project_id)
         self.project_id = project_id
         self.dataset_id = dataset_id

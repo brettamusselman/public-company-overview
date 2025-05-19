@@ -35,6 +35,7 @@ Current Plan:
 3. **Data Processing**:
     - Not sure yet
         - Current plan is BigQuery for processing but we might use Dataproc or Dataflow
+        - See database_design/design.md for more information
 
 4. **Data Visualization**:
     - Use Flask (with Streamlit or Dash) to create a web application that displays the data in a user-friendly way and allows for the user to interact with the data or request data that is not currently being held in GCP
