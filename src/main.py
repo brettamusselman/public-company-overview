@@ -9,6 +9,7 @@ import pandas as pd
 import logging
 import io
 import argparse
+import re
 
 # Set up logging
 # This sets it up so the way we have logging in the clients will route to this logger
@@ -33,7 +34,7 @@ from src.clients.bq.bq import BQ_Client
 
 #define functions
 #right now these are quick placeholders that we have to enhance and "arbitrage" calls on the apis
-def write_hist_prices(ticker: str, start: str, end: str, bucket_name: str, file_name: str):
+def write_hist_prices_yf(ticker: str, start: str, end: str, bucket_name: str, file_name: str):
     """Fetches historical prices for a given ticker and writes to GCS.
     Args:
         ticker (str): The stock ticker symbol.
@@ -49,21 +50,52 @@ def write_hist_prices(ticker: str, start: str, end: str, bucket_name: str, file_
     data = yf_client.get_data(ticker, start, end)
     
     # Write to GCS
-    storage_client.write_to_gcs(bucket_name, file_name, data.to_csv(index=False))
+    storage_client.upload_object(bucket_name, file_name, data.to_csv(index=False))
 
-def write_microlink_pdf(url: str, bucket_name: str, file_name: str):
+def write_hist_ticker_yf(ticker: str, period: str, interval: str):
+    """Fetches historical ticker data and writes to GCS.
+    Args:
+        ticker (str): The stock ticker symbol.
+        period (str): The period for the historical data (e.g., '1mo').
+        interval (str): The interval for the historical data (e.g., '1d').
+    """
+    yf_client = YF_Client()
+    storage_client = GCS_Client_Wrapper()
+
+    #should add error handling + arg handling (i.e. max period and interval options)
+    
+    # Fetch historical data
+    data = yf_client.get_ticker_history(ticker, period, interval)
+
+    # Set file name
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"{ticker}_{period}_{interval}_{current_time}.csv"
+    
+    # Write to GCS
+    storage_client.upload_object(file_name, data.to_csv(index=False), content_type='text/csv')
+
+def write_microlink_pdf(url: str):
     """Fetches a PDF from a URL using Microlink and writes to GCS.
     Args:
         url (str): The URL to fetch the PDF from.
-        bucket_name (str): The GCS bucket name.
-        file_name (str): The file name to write to GCS.
     """
     microlink_client = Microlink_Client()
     storage_client = GCS_Client_Wrapper()
     
     # Fetch PDF
-    pdf_response = microlink_client.get_pdf(url)
+    pdf_file = microlink_client.get_pdf_file(url)
+
+    # Set filename
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    sanitized_url = re.sub(r'\W+', '_', url)  # Replace non-word chars with underscores
+    file_name = f"{sanitized_url}_{current_time}.pdf"
     
     # Write to GCS
-    storage_client.write_to_gcs(bucket_name, file_name, pdf_response.content)
+    storage_client.upload_object(file_name, pdf_file, content_type='application/pdf')
 
+def write_entities():
+    """
+    This function should be the main dimension table for "entities" representing different public companies.
+    Not sure which source system we should use for this yet. (shodan, polygon, yfinance, fmp?)
+    """
+    pass
