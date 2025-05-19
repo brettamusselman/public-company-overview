@@ -6,6 +6,12 @@ import io
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+"""
+Next Steps:
+- Rate limiting
+- QoL improvements (ease of function calling, enhance args for functions, add some dataframe formatting)
+"""
+
 class YF_Client:
     def __init__(self):
         self.client = yfinance

@@ -159,3 +159,21 @@ def write_entities():
     Maybe includ source system and use all of the systems to get the data?
     """
     pass
+
+def main():
+    """
+    This function should be the main entry point for the script.
+    It should handle command line arguments and call the appropriate functions.
+    """
+    pass
+
+"""
+Next Steps:
+- I know in Azure functions, you can write a function.py to handle HTTP methods and use that as a wrapper to act like an API
+  - If we can do something similar with Cloud Function or FastAPI/Flask, we should
+- Enhance logic for each of the functions to handle errors and edge cases
+"""
+
+if __name__ == "__main__":
+    #add handling for command line arguments here
+    main()
