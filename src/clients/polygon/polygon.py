@@ -121,7 +121,7 @@ class Polygon_Wrapper:
         """
         try:
             logger.info("Starting to fetch exchanges from Polygon.io")
-            response = self.ref_client.get_exchanges()
+            response = self._api_call(self.ref_client.get_exchanges)
             if not response or "results" not in response:
                 logger.warning("No results found in the exchanges response")
                 return pd.DataFrame()
@@ -154,7 +154,7 @@ class Polygon_Wrapper:
             all_tickers = []
             
             # Get first page of results
-            response = self.ref_client.get_tickers(date=date, limit=limit, exchange=exchange)
+            response = self._api_call(self.ref_client.get_tickers_on_date, date=date, limit=limit, exchange=exchange)
             if not response or "results" not in response:
                 logger.warning("No results found in the initial tickers on date response")
                 return pd.DataFrame()
@@ -168,7 +168,7 @@ class Polygon_Wrapper:
                 try:
                     page_count += 1
                     logger.debug(f"Fetching page {page_count} of tickers on date {date}")
-                    response = self.ref_client.get_next_page(response)
+                    response = self._api_call(self.ref_client.get_next_page, response)
                     if response and "results" in response:
                         all_tickers.extend(response.get("results", []))
                         logger.debug(f"Added {len(response.get('results', []))} tickers from page {page_count}")
@@ -219,20 +219,11 @@ class Polygon_Wrapper:
             # Convert adjusted string to boolean
             adjusted_bool = adjusted.lower() == "true" if isinstance(adjusted, str) else adjusted
             
-            # Get aggregate bars
-            aggs = self.rest_client.get_aggregate_bars(
-                symbol=ticker,
-                from_date=start,
-                to_date=end,
-                adjusted=adjusted_bool,
-                sort=sort,
-                limit=limit,
-                multiplier=multiplier,
-                timespan=timespan,
-                full_range=full_range,
-                run_parallel=run_parallel,
-                max_concurrent_workers=max_concurrent_workers
-            )
+            aggs = self._api_call(self.rest_client.get_aggregate_bars, symbol=ticker,
+                                    from_date=start, to_date=end, adjusted=adjusted_bool,
+                                    sort=sort, limit=limit, multiplier=multiplier,
+                                    timespan=timespan, full_range=full_range,
+                                    run_parallel=run_parallel, max_concurrent_workers=max_concurrent_workers)
             
             logger.info(f"Fetched historical data for {ticker} from {start} to {end}")
             return pd.DataFrame(aggs)
@@ -249,7 +240,7 @@ class Polygon_Wrapper:
         """
         try:
             # Get news articles
-            news = self.ref_client.get_ticker_news(ticker=ticker)
+            news = self._api_call(self.ref_client.get_ticker_news, ticker=ticker)
             
             logger.info(f"Fetched news for {ticker}")
             return pd.DataFrame(news)
@@ -267,7 +258,7 @@ class Polygon_Wrapper:
         """
         try:
             # Get news articles on date
-            news = self.ref_client.get_ticker_news(ticker=ticker, date=date)
+            news = self._api_call(self.ref_client.get_ticker_news, ticker=ticker, date=date)
             
             logger.info(f"Fetched news for {ticker} on date {date}")
             return pd.DataFrame(news)
