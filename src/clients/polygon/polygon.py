@@ -6,6 +6,14 @@ from typing import List
 import io
 import logging
 
+#rate limiting/retry logic
+from ratelimit import limits, sleep_and_retry
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+import time
+
+CALLS_PER_MINUTE = 50
+ONE_MINUTE = 60
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
@@ -29,6 +37,24 @@ class Polygon_Wrapper:
             'Accept': 'application/json'
         }
 
+    @staticmethod
+    @sleep_and_retry
+    @limits(calls=CALLS_PER_MINUTE, period=ONE_MINUTE)
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(5),
+        retry=retry_if_exception_type((Exception,))
+    )
+    def _api_call(func, *args, **kwargs):
+        """
+        Safely calls an API function with rate limiting and retry.
+        """
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f"Retrying after exception in API call: {e}")
+            raise
+
     def get_tickers(self, limit=1000, exchange="") -> pd.DataFrame:
         """
         Fetches all available ticker symbols from Polygon.io.
@@ -50,7 +76,7 @@ class Polygon_Wrapper:
             all_tickers = []
             
             # Get first page of results
-            response = self.ref_client.get_tickers(limit=limit, exchange="")
+            response = self._api_call(self.ref_client.get_tickers, limit=limit, exchange=exchange)
             if not response or "results" not in response:
                 logger.warning("No results found in the initial tickers response")
                 return pd.DataFrame()
@@ -64,7 +90,7 @@ class Polygon_Wrapper:
                 try:
                     page_count += 1
                     logger.debug(f"Fetching page {page_count} of tickers")
-                    response = self.ref_client.get_next_page(response)
+                    response = self._api_call(self.ref_client.get_next_page, response)
                     if response and "results" in response:
                         all_tickers.extend(response.get("results", []))
                         logger.debug(f"Added {len(response.get('results', []))} tickers from page {page_count}")
