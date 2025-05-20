@@ -78,7 +78,6 @@ class FMP_Client:
                 raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
             
             logger.info(f"Fetched data from {url}")
-            print(f"response.content: {response.content}")
             
             # Convert the response to a DataFrame
             data = pd.read_json(io.StringIO(response.text))

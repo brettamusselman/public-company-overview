@@ -230,38 +230,3 @@ class Polygon_Wrapper:
         except Exception as e:
             logger.error(f"Exception occurred while fetching historical data: {str(e)}")
             raise
-
-    def get_news(self, ticker: str) -> pd.DataFrame:
-        """Fetches news articles for a given ticker.
-        Args:
-            ticker (str): The stock ticker symbol.
-        Returns:
-            pd.DataFrame: The news articles as a DataFrame.
-        """
-        try:
-            # Get news articles
-            news = self._api_call(self.ref_client.get_ticker_news, ticker=ticker)
-            
-            logger.info(f"Fetched news for {ticker}")
-            return pd.DataFrame(news)
-        except Exception as e:
-            logger.error(f"Exception occurred while fetching news: {str(e)}")
-            raise
-
-    def get_news_on_date(self, ticker: str, date: str) -> pd.DataFrame:
-        """Fetches news articles for a given ticker on a specific date.
-        Args:
-            ticker (str): The stock ticker symbol.
-            date (str): The date to filter news articles by (YYYY-MM-DD).
-        Returns:
-            pd.DataFrame: The news articles as a DataFrame.
-        """
-        try:
-            # Get news articles on date
-            news = self._api_call(self.ref_client.get_ticker_news, ticker=ticker, date=date)
-            
-            logger.info(f"Fetched news for {ticker} on date {date}")
-            return pd.DataFrame(news)
-        except Exception as e:
-            logger.error(f"Exception occurred while fetching news on date: {str(e)}")
-            raise
