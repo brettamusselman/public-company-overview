@@ -2,14 +2,14 @@ name: 'public-company-overview'
 version: 1.0.0
 
 profile: 'public-company-overview'
-target-path: 'add target here'
+target-path: 'target'
 
 models:
   public-company-overview:
     staging:
       +materialized: incremental
     intermediate:
-      +materialized: table
+      +materialized: incremental
     marts:
       +materialized: table
 
