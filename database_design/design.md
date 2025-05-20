@@ -8,13 +8,13 @@ Transformations/Dimensional Modeling:
     - I am leaning towards using DBT because apparently the dbt-bigquery package is really mature
 
 Design:
-- Ingest from "pco-store" into a BigQuery dataset and add a prefix to each table with "raw_{table name}"
+- Ingest from "pco-store" into a BigQuery dataset and add a prefix to each table with "stg_{table name}"
     - What we should really do is make sure the file drops off in a folder and just a script to read in each folder as a raw table
 - Next, we want to move into the silver (intermediate) layer
     - Every table should have the prefix "int_{table name}"
     - In this layer, the main point is to move into conformed dimensional modelling for dimension and fact tables
         - Dimensions:
-            - Entities (int_entities)
+            - Entities (int_entities such as int_entities_yf, int_entities_polygon, int_entities_fmp)
                 - List of entities with their tickers, exchanges, names, URLs, descriptions, and source systems
         - Fact:
         - Note: all of this should be "int_{table name}_{source system}" so there can be overlapping datasets from each source system
@@ -30,3 +30,6 @@ Design:
     - We now conform the data into a conformed fact and dimension tables (i.e. no "fct_{table name}_{source system}" or "dim_{table name}_{source system}" but just "fct_{table name}" or "dim_{table name}")
     - We should add a table called "manifest" this lists out, for fact tables, the type of data we have for which durations
         - i.e. if we have daily data for last 2 years for AAPL from Polygon, but the user requests minute data for the past 2 years, we can say "sorry, we don't have that data" or "we can get that data for you but it will take a while"
+    - Other dimensions
+        - Dim_date
+        - Dim_time
