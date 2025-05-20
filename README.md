@@ -16,7 +16,7 @@ Current Plan:
         - Financial Modeling Prep
             - Has a lot of information available like executive compensation, stock prices, and other information
                 - Exec comp is locked behind the starter tier so might upgrade to that
-            - Free tier is 250 calls a day but starter tier at $29 a month is 300 calls a minute
+            - Paid for starter tier
         - Polygon
             - Might use this for stock prices
         - Yfinance

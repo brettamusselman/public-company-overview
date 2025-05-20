@@ -2,11 +2,20 @@ import requests
 import pandas as pd
 import io
 import logging
+import json
+
+#rate limiting/retry logic
+from ratelimit import limits, sleep_and_retry
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+import time
+
+CALLS_PER_MINUTE = 300 #starter tier
+ONE_MINUTE = 60
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-FMP_URL = 'https://financialmodelingprep.com/api/v3/'
+FMP_URL = 'https://financialmodelingprep.com/api/'
 
 class FMP_Client:
     def __init__(self, api_key: str):
@@ -16,13 +25,33 @@ class FMP_Client:
             'Accept': 'application/json'
         }
         self.key_str = f"apikey={self.api_key}"
+
+    @staticmethod
+    @sleep_and_retry
+    @limits(calls=CALLS_PER_MINUTE, period=ONE_MINUTE)
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(5),
+        retry=retry_if_exception_type((Exception,))
+    )
+    def _api_call(func, *args, **kwargs):
+        """
+        Safely calls an API function with rate limiting and retry.
+        """
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f"Retrying after exception in API call: {e}")
+            raise
     
     #not sure if the get_data function will actually standardize as a base function
-    def _get_data(self, endpoint: str, params: dict = None) -> pd.DataFrame:
+    def _get_data(self, endpoint: str, params: dict = None, version='v3', exec_comp=False) -> pd.DataFrame:
         """Fetches data from the FMP API.
         Args:
             endpoint (str): The API endpoint to fetch data from.
             params (dict): Additional parameters for the API request.
+            version (str): The API version to use.
+            exec_comp (bool): Whether to fetch executive compensation data.
         Returns:
             pd.DataFrame: The response data as a DataFrame.
         """
@@ -30,14 +59,21 @@ class FMP_Client:
             if params is None:
                 params = {}
             
-            url = f"{FMP_URL}{endpoint}?{self.key_str}"
-            response = requests.get(url, headers=self.headers, params=params)
+            # Add API key to query params
+            params["apikey"] = self.api_key
+
+            url = f"{FMP_URL}{version}/{endpoint}"
+            if exec_comp: #for some reason, this api url doesn't want the api/ part
+                url = f"{FMP_URL.replace("api/", "")}{version}/{endpoint}"
+            response = self._api_call(requests.get, url, headers=self.headers, params=params)
             
             if response.status_code != 200:
+                logger.error(url.replace(self.key_str, "api=<hidden>"))
                 logger.error(f"Error fetching data: {response.status_code} - {response.text}")
                 raise Exception(f"Error fetching data: {response.status_code} - {response.text}")
             
             logger.info(f"Fetched data from {url}")
+            print(f"response.content: {response.content}")
             
             # Convert the response to a DataFrame
             data = pd.read_json(io.StringIO(response.text))
@@ -87,7 +123,8 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The executive compensation as a DataFrame.
         """
-        endpoint = f"governance-executive-compensation/{symbol}"
-        
-        return self._get_data(endpoint)
+        endpoint = "governance-executive-compensation"
+        params = {"symbol": symbol}
+        return self._get_data(endpoint, params=params, version='stable', exec_comp=True)
+
     
