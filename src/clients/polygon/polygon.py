@@ -1,4 +1,4 @@
-from polygon import StocksClient
+from polygon import StocksClient, ReferenceClient
 import pandas as pd
 #from polygon import WebSocketClient
 #from polygon.websocket.models import WebSocketMessage, Feed, Market
@@ -9,14 +9,132 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+"""
+Notes:
+- Don't use the official Polygon.io documentation (for some reason), use pip polygon docs and maybe github
+
+Next Steps:
+- 
+"""
+
 class Polygon_Wrapper:
     def __init__(self, api_key: str):
         self.rest_client = StocksClient(api_key)
+        self.ref_client = ReferenceClient(api_key)
         #self.ws_client = WebSocketClient(api_key)
         self.headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
+
+    def get_tickers(self, limit=1000, exchange="") -> pd.DataFrame:
+        """
+        Fetches all available ticker symbols from Polygon.io.
+        
+        Handles pagination automatically to retrieve the complete list of tickers.
+
+        args:
+            limit (int): The maximum number of tickers to fetch. Default is 1000.
+            exchange (str): The exchange to filter tickers by. Default is empty string (no filter).
+        
+        Returns:
+            pd.DataFrame: DataFrame containing ticker information including symbol, name, market, etc.
+        
+        Raises:
+            Exception: If there is an error fetching tickers from the API.
+        """
+        try:
+            logger.info("Starting to fetch tickers from Polygon.io")
+            all_tickers = []
+            
+            # Get first page of results
+            response = self.ref_client.get_tickers(limit=limit, exchange="")
+            if not response or "results" not in response:
+                logger.warning("No results found in the initial tickers response")
+                return pd.DataFrame()
+                
+            all_tickers.extend(response.get("results", []))
+            logger.info(f"Fetched initial page with {len(response.get('results', []))} tickers")
+            
+            # Handle pagination
+            page_count = 1
+            while "next_url" in response:
+                try:
+                    page_count += 1
+                    logger.debug(f"Fetching page {page_count} of tickers")
+                    response = self.ref_client.get_next_page(response)
+                    if response and "results" in response:
+                        all_tickers.extend(response.get("results", []))
+                        logger.debug(f"Added {len(response.get('results', []))} tickers from page {page_count}")
+                    else:
+                        logger.warning(f"No results found in page {page_count}")
+                        break
+                except Exception as e:
+                    logger.error(f"Error fetching page {page_count}: {str(e)}")
+                    break
+            
+            # Create dataframe from all ticker results
+            df = pd.DataFrame(all_tickers)
+            logger.info(f"Successfully retrieved {len(df)} tickers in total")
+            return df
+        
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching tickers: {str(e)}")
+            raise
+
+    def get_tickers_on_date(self, date: str, limit=1000, exchange="") -> pd.DataFrame:
+        """Fetches all available ticker symbols on a specific date.
+        
+        Handles pagination automatically to retrieve the complete list of tickers.
+        
+        Args:
+            date (str): The date to filter tickers by (YYYY-MM-DD).
+            limit (int): The maximum number of tickers to fetch. Default is 1000.
+            exchange (str): The exchange to filter tickers by. Default is empty string (no filter).
+        
+        Returns:
+            pd.DataFrame: DataFrame containing ticker information including symbol, name, market, etc.
+        
+        Raises:
+            Exception: If there is an error fetching tickers from the API.
+        """
+        try:
+            logger.info(f"Starting to fetch tickers on date {date}")
+            all_tickers = []
+            
+            # Get first page of results
+            response = self.ref_client.get_tickers(date=date, limit=limit, exchange=exchange)
+            if not response or "results" not in response:
+                logger.warning("No results found in the initial tickers on date response")
+                return pd.DataFrame()
+                
+            all_tickers.extend(response.get("results", []))
+            logger.info(f"Fetched initial page with {len(response.get('results', []))} tickers on date {date}")
+            
+            # Handle pagination
+            page_count = 1
+            while "next_url" in response:
+                try:
+                    page_count += 1
+                    logger.debug(f"Fetching page {page_count} of tickers on date {date}")
+                    response = self.ref_client.get_next_page(response)
+                    if response and "results" in response:
+                        all_tickers.extend(response.get("results", []))
+                        logger.debug(f"Added {len(response.get('results', []))} tickers from page {page_count}")
+                    else:
+                        logger.warning(f"No results found in page {page_count}")
+                        break
+                except Exception as e:
+                    logger.error(f"Error fetching page {page_count}: {str(e)}")
+                    break
+            
+            # Create dataframe from all ticker results
+            df = pd.DataFrame(all_tickers)
+            logger.info(f"Successfully retrieved {len(df)} tickers on date {date} in total")
+            return df
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching tickers on date: {str(e)}")
+            raise
     
     def get_historical_data(self, 
                             ticker: str, 
