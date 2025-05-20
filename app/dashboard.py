@@ -3,6 +3,10 @@ import dash
 from dash import html, dcc, Input, Output
 import plotly.graph_objs as go
 
+from google.cloud import bigquery
+
+bq_client = bigquery.Client()
+
 def create_dash_app(server: Flask) -> dash.Dash:
     dash_app = dash.Dash(
         __name__,
