@@ -14,8 +14,10 @@ Design:
     - Every table should have the prefix "int_{table name}"
     - In this layer, the main point is to move into conformed dimensional modelling for dimension and fact tables
         - Dimensions:
-            - Entities (int_entities such as int_entities_yf, int_entities_polygon, int_entities_fmp)
-                - List of entities with their tickers, exchanges, names, URLs, descriptions, and source systems
+            - tickers (int_tickers such as int_tickers_yf, int_tickers_polygon, int_tickers_fmp)
+                - List of tickers with their tickers, exchanges, names, URLs, descriptions, and source systems
+            - exchanges (int_exchanges)
+                - List of exchanges with their names, URLs, descriptions, and source systems
         - Fact:
         - Note: all of this should be "int_{table name}_{source system}" so there can be overlapping datasets from each source system
             - Historical ticker performance (int_hist_ticker)

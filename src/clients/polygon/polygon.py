@@ -82,6 +82,29 @@ class Polygon_Wrapper:
             logger.error(f"Exception occurred while fetching tickers: {str(e)}")
             raise
 
+    def get_exchanges(self) -> pd.DataFrame:
+        """Fetches all available exchanges from Polygon.io.
+        
+        Returns:
+            pd.DataFrame: DataFrame containing exchange information including name, type, and mic.
+        
+        Raises:
+            Exception: If there is an error fetching exchanges from the API.
+        """
+        try:
+            logger.info("Starting to fetch exchanges from Polygon.io")
+            response = self.ref_client.get_exchanges()
+            if not response or "results" not in response:
+                logger.warning("No results found in the exchanges response")
+                return pd.DataFrame()
+                
+            df = pd.DataFrame(response.get("results", []))
+            logger.info(f"Successfully retrieved {len(df)} exchanges")
+            return df
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching exchanges: {str(e)}")
+            raise
+
     def get_tickers_on_date(self, date: str, limit=1000, exchange="") -> pd.DataFrame:
         """Fetches all available ticker symbols on a specific date.
         
@@ -189,3 +212,37 @@ class Polygon_Wrapper:
             logger.error(f"Exception occurred while fetching historical data: {str(e)}")
             raise
 
+    def get_news(self, ticker: str) -> pd.DataFrame:
+        """Fetches news articles for a given ticker.
+        Args:
+            ticker (str): The stock ticker symbol.
+        Returns:
+            pd.DataFrame: The news articles as a DataFrame.
+        """
+        try:
+            # Get news articles
+            news = self.ref_client.get_ticker_news(ticker=ticker)
+            
+            logger.info(f"Fetched news for {ticker}")
+            return pd.DataFrame(news)
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching news: {str(e)}")
+            raise
+
+    def get_news_on_date(self, ticker: str, date: str) -> pd.DataFrame:
+        """Fetches news articles for a given ticker on a specific date.
+        Args:
+            ticker (str): The stock ticker symbol.
+            date (str): The date to filter news articles by (YYYY-MM-DD).
+        Returns:
+            pd.DataFrame: The news articles as a DataFrame.
+        """
+        try:
+            # Get news articles on date
+            news = self.ref_client.get_ticker_news(ticker=ticker, date=date)
+            
+            logger.info(f"Fetched news for {ticker} on date {date}")
+            return pd.DataFrame(news)
+        except Exception as e:
+            logger.error(f"Exception occurred while fetching news on date: {str(e)}")
+            raise
