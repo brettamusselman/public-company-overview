@@ -12,9 +12,11 @@ logger.addHandler(logging.NullHandler())
 """
 Notes:
 - Don't use the official Polygon.io documentation (for some reason), use pip polygon docs and maybe github
+- I believe this is because the I installed the unofficial wrapper around Polygon instead of the official library
 
 Next Steps:
-- 
+- Rate limiting
+- Any more functions for different types of data
 """
 
 class Polygon_Wrapper:
