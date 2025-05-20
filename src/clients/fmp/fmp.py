@@ -17,6 +17,11 @@ logger.addHandler(logging.NullHandler())
 
 FMP_URL = 'https://financialmodelingprep.com/api/'
 
+"""
+Next Steps:
+- Add functions for M&A, Market Cap, Headcount, Company Notes, Stock Peers, Analyst ratings, News, and Earning Transcripts
+"""
+
 class FMP_Client:
     def __init__(self, api_key: str):
         self.api_key = api_key
