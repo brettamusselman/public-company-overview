@@ -7,7 +7,7 @@ Current Plan:
 1. **Data Collection**:
     - Create clients for different APIs to solve different problems
         - Microlink
-            - Allows for the user to get a screenshot of their resume
+            - Allows for the user to get a screenshot of the company website
             - We might enhance this with a search engine to search for about section (Bing API, DuckDuck Go) or we could use a web crawler like Scrapy + BeautifulSoup using the given URLs from many of the entity tables from the source APIs
             - Allows the user to grab a PDF and text from the website
         - Shodan Entity DB
