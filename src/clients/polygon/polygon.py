@@ -11,7 +11,7 @@ from ratelimit import limits, sleep_and_retry
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
 import time
 
-CALLS_PER_MINUTE = 50
+CALLS_PER_MINUTE = 5 #free tier
 ONE_MINUTE = 60
 
 logger = logging.getLogger(__name__)
