@@ -19,7 +19,8 @@ FMP_URL = 'https://financialmodelingprep.com/api/'
 
 """
 Next Steps:
-- Add functions for M&A, Market Cap, Headcount, Company Notes, Stock Peers, Analyst ratings, News, and Earning Transcripts
+- Add all of the directory functions and a search functionality (might be useful in app)
+- Add functions for Company Notes, Stock Peers, Analyst ratings, News, and Earning Transcripts
 """
 
 class FMP_Client:

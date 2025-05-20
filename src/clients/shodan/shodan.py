@@ -12,8 +12,9 @@ SHODAN_URL = 'https://entitydb.shodan.io/api/'
 """
 Next steps:
 - Add pagination support logic
-- Add parsing to dataframes logic
 - Add tenacity retry logic
+    - Use base _api_call method
+- Change the object returned to be pandas dataframes
 - Potentially add schema validation/pydantic checks use schemas.py file
 """
 
