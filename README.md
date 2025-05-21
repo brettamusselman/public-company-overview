@@ -27,13 +27,16 @@ Current Plan:
             - Wrapper around GCP Secret Manager to store the API keys
         - BigQuery
             - Wrapper around GCP BigQuery to read the data into tables
+    - Wrap with a main.py that accepts command line args
+    - Add a FastAPI to handle the correct calls
+    - Host on Cloud Run in Docker container
 
 2. **Data Storage**:
     - Use GCP Cloud Storage to store data
 
 3. **Data Processing**:
-    - Not sure yet
-        - Current plan is BigQuery for processing but we might use Dataproc or Dataflow
+    - Not sure yet (most likely DBT + BigQuery)
+        - Current plan is BigQuery for processing abstracted through DBT
         - See database_design/design.md for more information
 
 4. **Data Visualization**:
