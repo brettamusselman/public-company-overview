@@ -348,6 +348,17 @@ def cli_args() -> argparse.Namespace:
     parser.add_argument("--fmp-exchanges", help="Fetch exchanges from FMP", action="store_true")
     parser.add_argument("--polygon-tickers", help="Fetch tickers from Polygon", action="store_true")
     parser.add_argument("--polygon-exchanges", help="Fetch exchanges from Polygon", action="store_true")
+    parser.add_argument("--fmp-ciks", help="Fetch CIKs from FMP", action="store_true")
+    parser.add_argument("--fmp-company-profile", help="Fetch company profile from FMP", action="store_true")
+    parser.add_argument("--fmp-company-notes", help="Fetch company notes from FMP", action="store_true")
+    parser.add_argument("--fmp-stock-peers", help="Fetch stock peers from FMP", action="store_true")
+    parser.add_argument("--fmp-employee-count", help="Fetch employee count from FMP", action="store_true")
+    parser.add_argument("--fmp-income-statement", help="Fetch income statement from FMP", action="store_true")
+    parser.add_argument("--fmp-balance-sheet", help="Fetch balance sheet from FMP", action="store_true")
+    parser.add_argument("--fmp-cash-flow", help="Fetch cash flow from FMP", action="store_true")
+    parser.add_argument("--fmp-stock-news", help="Fetch stock news from FMP", action="store_true")
+    parser.add_argument("--fmp-key-executives", help="Fetch key executives from FMP", action="store_true")
+    parser.add_argument("--fmp-exec-comp", help="Fetch executive compensation from FMP", action="store_true")
     parser.add_argument("--fmp-countries", help="Fetch countries from FMP", action="store_true")
     parser.add_argument("--fmp-industries", help="Fetch industries from FMP", action="store_true")
     parser.add_argument("--fmp-sectors", help="Fetch sectors from FMP", action="store_true")
@@ -396,8 +407,8 @@ def main():
             start=args.start,
             end=args.end,
             timespan=args.timespan or "day",
-            multiplier=args.multiplier if args.multiplier else 1,
-            adjusted=args.adjusted if args.adjusted else "true"
+            multiplier=args.multiplier,
+            adjusted=args.adjusted
         )
 
     if args.microlink_pdf:
@@ -415,6 +426,9 @@ def main():
     if args.fmp_tickers:
         write_tickers_fmp()
 
+    if args.fmp_tickers_w_financials:
+        write_tickers_w_financials_fmp()
+
     if args.fmp_exchanges:
         write_exchanges_fmp()
 
@@ -427,8 +441,68 @@ def main():
     if args.fmp_sectors:
         write_sectors_fmp()
 
-    if args.fmp_tickers_w_financials:
-        write_tickers_w_financials_fmp()
+    if args.fmp_ciks:
+        write_ciks_fmp()
+
+    if args.fmp_company_profile:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-company-profile: --ticker")
+            return
+        write_company_profile_fmp(args.ticker)
+
+    if args.fmp_company_notes:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-company-notes: --ticker")
+            return
+        write_company_notes_fmp(args.ticker)
+
+    if args.fmp_stock_peers:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-stock-peers: --ticker")
+            return
+        write_stock_peers_fmp(args.ticker)
+
+    if args.fmp_employee_count:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-employee-count: --ticker")
+            return
+        write_employee_count_fmp(args.ticker)
+
+    if args.fmp_income_statement:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-income-statement: --ticker")
+            return
+        write_income_statement_fmp(args.ticker)
+
+    if args.fmp_balance_sheet:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-balance-sheet: --ticker")
+            return
+        write_balance_sheet_fmp(args.ticker)
+
+    if args.fmp_cash_flow:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-cash-flow: --ticker")
+            return
+        write_cash_flow_fmp(args.ticker)
+
+    if args.fmp_stock_news:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-stock-news: --ticker")
+            return
+        write_stock_news_fmp(args.ticker)
+
+    if args.fmp_key_executives:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-key-executives: --ticker")
+            return
+        write_key_executives_fmp(args.ticker)
+
+    if args.fmp_exec_comp:
+        if not args.ticker:
+            logger.error("Missing required argument for --fmp-exec-comp: --ticker")
+            return
+        write_exec_comp_fmp(args.ticker)
 
     if args.polygon_tickers:
         write_tickers_polygon()
