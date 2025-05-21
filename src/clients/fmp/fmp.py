@@ -50,13 +50,13 @@ class FMP_Client:
             raise
     
     #not sure if the get_data function will actually standardize as a base function
-    def _get_data(self, endpoint: str, params: dict = None, version='v3', exec_comp=False) -> pd.DataFrame:
+    def _get_data(self, endpoint: str, params: dict = None, version='v3', stable_end=False) -> pd.DataFrame:
         """Fetches data from the FMP API.
         Args:
             endpoint (str): The API endpoint to fetch data from.
             params (dict): Additional parameters for the API request.
             version (str): The API version to use.
-            exec_comp (bool): Whether to fetch executive compensation data.
+            stable_end (bool): Whether to fetch from stable.
         Returns:
             pd.DataFrame: The response data as a DataFrame.
         """
@@ -68,7 +68,7 @@ class FMP_Client:
             params["apikey"] = self.api_key
 
             url = f"{FMP_URL}{version}/{endpoint}"
-            if exec_comp: #for some reason, this api url doesn't want the api/ part
+            if stable_end: #for some reason, this api url doesn't want the api/ part
                 url = f"{FMP_URL.replace("api/", "")}{version}/{endpoint}"
             response = self._api_call(requests.get, url, headers=self.headers, params=params)
             
@@ -105,9 +105,11 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The company notes as a DataFrame.
         """
-        endpoint = f"company-notes/{symbol}"
-        
-        return self._get_data(endpoint)
+        endpoint = f"company-notes"
+        params = {
+            "symbol": symbol
+        }
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
     
     def get_stock_peers(self, symbol: str) -> pd.DataFrame:
         """Fetches the stock peers for a specific stock symbol.
@@ -116,9 +118,11 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The stock peers as a DataFrame.
         """
-        endpoint = f"stock-peers/{symbol}"
-        
-        return self._get_data(endpoint)
+        endpoint = f"stock-peers"
+        params = {
+            "symbol": symbol
+        }
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
     
     def get_employee_count(self, symbol: str) -> pd.DataFrame:
         """Fetches the employee count for a specific stock symbol.
@@ -127,9 +131,11 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The employee count as a DataFrame.
         """
-        endpoint = f"employee-count/{symbol}"
-        
-        return self._get_data(endpoint)
+        endpoint = f"employee-count"
+        params = {
+            "symbol": symbol
+        }
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
     
     def get_income_statement(self, symbol: str) -> pd.DataFrame:
         """Fetches the income statement for a specific stock symbol.
@@ -171,9 +177,11 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The stock news as a DataFrame.
         """
-        endpoint = f"news/stock/{symbol}"
-        
-        return self._get_data(endpoint)
+        endpoint = f"news/stock"
+        params = {
+            "symbol": symbol
+        }
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
     
     def get_key_executives(self, symbol: str) -> pd.DataFrame:
         """Fetches the key executives for a specific stock symbol.
@@ -195,12 +203,14 @@ class FMP_Client:
         """
         endpoint = "governance-executive-compensation"
         params = {"symbol": symbol}
-        return self._get_data(endpoint, params=params, version='stable', exec_comp=True)
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
     
     def get_stock_earning_transcripts(self, symbol: str,
                                        year: str,
                                        quarter: str) -> pd.DataFrame:
-        """Fetches the earnings transcripts for a specific stock symbol.
+        """
+        NOTE: NOT AVAILABLE UNTIL PREMIUM TIER AND WE HAVE STARTER
+        Fetches the earnings transcripts for a specific stock symbol.
         Args:
             symbol (str): The stock symbol to fetch data for.
             year (str): The year of the earnings transcript.
@@ -208,9 +218,9 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The earnings transcripts as a DataFrame.
         """
-        endpoint = f"earning-call-transcript?{symbol}/{year}/{quarter}"
+        endpoint = f"earning-call-transcript"
         params = {"symbol": symbol, "year": year, "quarter": quarter}
-        return self._get_data(endpoint, params=params, version='v3', exec_comp=True)
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
 
     def company_name_search(self, query: str):
         """Searches for a company by name.
@@ -229,7 +239,7 @@ class FMP_Client:
             pd.DataFrame: The list of tickers as a DataFrame.
         """
         endpoint = "stock-list"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
 
     def get_tickers_with_financials(self) -> pd.DataFrame:
         """Fetches the list of tickers with financials.
@@ -237,7 +247,7 @@ class FMP_Client:
             pd.DataFrame: The list of tickers with financials as a DataFrame.
         """
         endpoint = "financial-statement-symbol-list"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
 
     def get_ciks(self) -> pd.DataFrame:
         """Fetches the list of CIKs.
@@ -245,7 +255,7 @@ class FMP_Client:
             pd.DataFrame: The list of CIKs as a DataFrame.
         """
         endpoint = "cik-list"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
 
     def get_exchanges(self) -> pd.DataFrame:
         """Fetches the list of exchanges.
@@ -253,7 +263,7 @@ class FMP_Client:
             pd.DataFrame: The list of exchanges as a DataFrame.
         """
         endpoint = "available-exchanges"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
 
     def get_sectors(self) -> pd.DataFrame:
         """Fetches the list of sectors.
@@ -261,7 +271,7 @@ class FMP_Client:
             pd.DataFrame: The list of sectors as a DataFrame.
         """
         endpoint = "available-sectors"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
 
     def get_industries(self) -> pd.DataFrame:
         """Fetches the list of industries.
@@ -269,7 +279,7 @@ class FMP_Client:
             pd.DataFrame: The list of industries as a DataFrame.
         """
         endpoint = "available-industries"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
 
     def get_countries(self) -> pd.DataFrame:
         """Fetches the list of countries.
@@ -277,4 +287,4 @@ class FMP_Client:
             pd.DataFrame: The list of countries as a DataFrame.
         """
         endpoint = "available-countries"
-        return self._get_data(endpoint)
+        return self._get_data(endpoint, version='stable', stable_end=True)
