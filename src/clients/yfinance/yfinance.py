@@ -9,7 +9,6 @@ logger.addHandler(logging.NullHandler())
 """
 Next Steps:
 - Rate limiting
-- QoL improvements (ease of function calling, enhance args for functions, add some dataframe formatting)
 """
 
 class YF_Client:
@@ -31,6 +30,15 @@ class YF_Client:
         """
         try:
             data = self.client.download(ticker, start=start, end=end)
+            #change Price to Date
+            data.rename(columns={'Date': 'Price'}, inplace=True)
+
+            #drop first row
+            data.drop(data.index[0], inplace=True)
+
+            #make column ticker and set to ticker
+            data['Ticker'] = ticker
+
             logger.info(f"Fetched data for {ticker} from {start} to {end}")
             return data
         except Exception as e:
@@ -70,6 +78,7 @@ class YF_Client:
         try:
             data = self.client.Tickers(tickers).download(period=period, interval=interval,
                                                         start=start, end=end, auto_adjust=auto_adjust)
+            
             logger.info(f"Fetched data for tickers with period {period} and interval {interval}")
             return data
         except Exception as e:

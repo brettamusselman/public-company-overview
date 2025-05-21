@@ -19,8 +19,7 @@ FMP_URL = 'https://financialmodelingprep.com/api/'
 
 """
 Next Steps:
-- Add all of the directory functions and a search functionality (might be useful in app)
-- Add functions for Company Notes, Stock Peers, Analyst ratings, News, and Earning Transcripts
+- Add more functions (there are tons of endpoints but we can get away with some of the more basic stuff)
 """
 
 class FMP_Client:
@@ -99,6 +98,39 @@ class FMP_Client:
         
         return self._get_data(endpoint)
     
+    def get_company_notes(self, symbol: str) -> pd.DataFrame:
+        """Fetches the company notes for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+        Returns:
+            pd.DataFrame: The company notes as a DataFrame.
+        """
+        endpoint = f"company-notes/{symbol}"
+        
+        return self._get_data(endpoint)
+    
+    def get_stock_peers(self, symbol: str) -> pd.DataFrame:
+        """Fetches the stock peers for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+        Returns:
+            pd.DataFrame: The stock peers as a DataFrame.
+        """
+        endpoint = f"stock-peers/{symbol}"
+        
+        return self._get_data(endpoint)
+    
+    def get_employee_count(self, symbol: str) -> pd.DataFrame:
+        """Fetches the employee count for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+        Returns:
+            pd.DataFrame: The employee count as a DataFrame.
+        """
+        endpoint = f"employee-count/{symbol}"
+        
+        return self._get_data(endpoint)
+    
     def get_income_statement(self, symbol: str) -> pd.DataFrame:
         """Fetches the income statement for a specific stock symbol.
         Args:
@@ -107,6 +139,39 @@ class FMP_Client:
             pd.DataFrame: The income statement as a DataFrame.
         """
         endpoint = f"income-statement/{symbol}"
+        
+        return self._get_data(endpoint)
+    
+    def get_balance_sheet(self, symbol: str) -> pd.DataFrame:
+        """Fetches the balance sheet for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+        Returns:
+            pd.DataFrame: The balance sheet as a DataFrame.
+        """
+        endpoint = f"balance-sheet-statement/{symbol}"
+        
+        return self._get_data(endpoint)
+    
+    def get_cash_flow(self, symbol: str) -> pd.DataFrame:
+        """Fetches the cash flow statement for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+        Returns:
+            pd.DataFrame: The cash flow statement as a DataFrame.
+        """
+        endpoint = f"cash-flow-statement/{symbol}"
+        
+        return self._get_data(endpoint)
+    
+    def get_stock_news(self, symbol: str) -> pd.DataFrame:
+        """Fetches the stock news for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+        Returns:
+            pd.DataFrame: The stock news as a DataFrame.
+        """
+        endpoint = f"news/stock/{symbol}"
         
         return self._get_data(endpoint)
     
@@ -131,5 +196,85 @@ class FMP_Client:
         endpoint = "governance-executive-compensation"
         params = {"symbol": symbol}
         return self._get_data(endpoint, params=params, version='stable', exec_comp=True)
-
     
+    def get_stock_earning_transcripts(self, symbol: str,
+                                       year: str,
+                                       quarter: str) -> pd.DataFrame:
+        """Fetches the earnings transcripts for a specific stock symbol.
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+            year (str): The year of the earnings transcript.
+            quarter (str): The quarter of the earnings transcript.
+        Returns:
+            pd.DataFrame: The earnings transcripts as a DataFrame.
+        """
+        endpoint = f"earning-call-transcript?{symbol}/{year}/{quarter}"
+        params = {"symbol": symbol, "year": year, "quarter": quarter}
+        return self._get_data(endpoint, params=params, version='v3', exec_comp=True)
+
+    def company_name_search(self, query: str):
+        """Searches for a company by name.
+        Args:
+            query (str): The company name to search for.
+        Returns:
+            pd.DataFrame: The search results as a DataFrame.
+        """
+        endpoint = f"search-name?query={query}"
+        
+        return self._get_data(endpoint)
+
+    def get_tickers(self) -> pd.DataFrame:
+        """Fetches the list of all tickers.
+        Returns:
+            pd.DataFrame: The list of tickers as a DataFrame.
+        """
+        endpoint = "stock-list"
+        return self._get_data(endpoint)
+
+    def get_tickers_with_financials(self) -> pd.DataFrame:
+        """Fetches the list of tickers with financials.
+        Returns:
+            pd.DataFrame: The list of tickers with financials as a DataFrame.
+        """
+        endpoint = "financial-statement-symbol-list"
+        return self._get_data(endpoint)
+
+    def get_ciks(self) -> pd.DataFrame:
+        """Fetches the list of CIKs.
+        Returns:
+            pd.DataFrame: The list of CIKs as a DataFrame.
+        """
+        endpoint = "cik-list"
+        return self._get_data(endpoint)
+
+    def get_exchanges(self) -> pd.DataFrame:
+        """Fetches the list of exchanges.
+        Returns:
+            pd.DataFrame: The list of exchanges as a DataFrame.
+        """
+        endpoint = "available-exchanges"
+        return self._get_data(endpoint)
+
+    def get_sectors(self) -> pd.DataFrame:
+        """Fetches the list of sectors.
+        Returns:
+            pd.DataFrame: The list of sectors as a DataFrame.
+        """
+        endpoint = "available-sectors"
+        return self._get_data(endpoint)
+
+    def get_industries(self) -> pd.DataFrame:
+        """Fetches the list of industries.
+        Returns:
+            pd.DataFrame: The list of industries as a DataFrame.
+        """
+        endpoint = "available-industries"
+        return self._get_data(endpoint)
+
+    def get_countries(self) -> pd.DataFrame:
+        """Fetches the list of countries.
+        Returns:
+            pd.DataFrame: The list of countries as a DataFrame.
+        """
+        endpoint = "available-countries"
+        return self._get_data(endpoint)
