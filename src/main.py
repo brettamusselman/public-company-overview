@@ -198,13 +198,40 @@ def write_tickers():
     """
     This function should be the main dimension table for "tickers" representing different public companies.
     """
-    pass
+    write_tickers_fmp()
+    write_tickers_polygon()
+
+def write_exchanges():
+    """
+    This function should be the main dimension table for "exchanges" representing different stock exchanges.
+    """
+    write_exchanges_fmp()
+    write_exchanges_polygon()
+
+def write_dimensions():
+    """
+    This function should be the main dimension table for "dimensions" representing different dimensions.
+    """
+    write_tickers()
+    write_exchanges()
+    write_countries_fmp()
+    write_industries_fmp()
+    write_sectors_fmp()
 
 def standard_workflow():
     """
     This function should represent a standard workflow where a ticker is entered and a bunh of data is pulled.
     """
     pass
+
+def daily_update():
+    """
+    This function should represent a daily update workflow where data is pulled on a daily basis.
+    It should be called by a cron job or similar with a focus on a list of top stocks and dimensions.
+    """
+    write_dimensions()
+
+    #add list of tickers to pull and their respective fact table functions below
 
 def cli_args() -> argparse.Namespace:
     """
@@ -223,22 +250,102 @@ def cli_args() -> argparse.Namespace:
     parser.add_argument("--fmp-exchanges", help="Fetch exchanges from FMP", action="store_true")
     parser.add_argument("--polygon-tickers", help="Fetch tickers from Polygon", action="store_true")
     parser.add_argument("--polygon-exchanges", help="Fetch exchanges from Polygon", action="store_true")
+    parser.add_argument("--fmp-countries", help="Fetch countries from FMP", action="store_true")
+    parser.add_argument("--fmp-industries", help="Fetch industries from FMP", action="store_true")
+    parser.add_argument("--fmp-sectors", help="Fetch sectors from FMP", action="store_true")
+    parser.add_argument("--fmp-tickers-w-financials", help="Fetch tickers with financials from FMP", action="store_true")
+    parser.add_argument("--write-dimensions", help="Write all dimensions", action="store_true")
+    parser.add_argument("--daily-update", help="Run daily update workflow", action="store_true")
+    parser.add_argument("--standard-workflow", help="Run standard workflow", action="store_true")
     
     # Add more arguments as needed
-    #ticker
     parser.add_argument("--ticker", help="Ticker symbol")
-    #start and end dates
+    parser.add_argument("--tickers", help="List of ticker symbols (comma-separated)")
     parser.add_argument("--start", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end", help="End date (YYYY-MM-DD)")
+    parser.add_argument("--period", help="Period for historical data (e.g., '1mo')")
+    parser.add_argument("--interval", help="Interval for historical data (e.g., '1d')")
+    parser.add_argument("--url", help="URL to fetch data from")
+    parser.add_argument("--timespan", help="Timespan for historical data (e.g., 'day')")
+    parser.add_argument("--multiplier", help="Multiplier for historical data", type=int, default=1)
+    parser.add_argument("--adjusted", help="Whether to use adjusted prices (true/false)", default="true")
+    parser.add_argument("--content-type", help="Content type for upload", default="text/csv")
+    parser.add_argument("--prefix", help="Prefix for file path")
 
     return parser.parse_args()
 
 def main():
-    """
-    This function should be the main entry point for the script.
-    It should handle command line arguments and call the appropriate functions.
-    """
-    pass
+    args = cli_args()
+
+    if args.yf_hist_prices:
+        if not (args.ticker and args.start and args.end):
+            logger.error("Missing required arguments for --yf-hist-prices: --ticker, --start, --end")
+            return
+        write_hist_prices_yf(args.ticker, args.start, args.end)
+
+    if args.yf_hist_ticker:
+        if not (args.ticker and args.period and args.interval):
+            logger.error("Missing required arguments for --yf-hist-ticker: --ticker, --period, --interval")
+            return
+        write_hist_ticker_yf(args.ticker, args.period, args.interval)
+
+    if args.polygon_hist_ticker:
+        if not (args.ticker and args.start and args.end):
+            logger.error("Missing required arguments for --polygon-hist-ticker: --ticker, --start, --end")
+            return
+        write_hist_ticker_polygon(
+            ticker=args.ticker,
+            start=args.start,
+            end=args.end,
+            timespan=args.timespan or "day",
+            multiplier=args.multiplier if args.multiplier else 1,
+            adjusted=args.adjusted if args.adjusted else "true"
+        )
+
+    if args.microlink_pdf:
+        if not args.url:
+            logger.error("Missing required argument for --microlink-pdf: --url")
+            return
+        write_microlink_pdf(args.url)
+
+    if args.microlink_text:
+        if not args.url:
+            logger.error("Missing required argument for --microlink-text: --url")
+            return
+        write_microlink_text(args.url)
+
+    if args.fmp_tickers:
+        write_tickers_fmp()
+
+    if args.fmp_exchanges:
+        write_exchanges_fmp()
+
+    if args.fmp_countries:
+        write_countries_fmp()
+
+    if args.fmp_industries:
+        write_industries_fmp()
+
+    if args.fmp_sectors:
+        write_sectors_fmp()
+
+    if args.fmp_tickers_w_financials:
+        write_tickers_w_financials_fmp()
+
+    if args.polygon_tickers:
+        write_tickers_polygon()
+
+    if args.polygon_exchanges:
+        write_exchanges_polygon()
+
+    if args.write_dimensions:
+        write_dimensions()
+
+    if args.daily_update:
+        daily_update()
+
+    if args.standard_workflow:
+        standard_workflow()
 
 """
 Next Steps:
@@ -250,5 +357,4 @@ Next Steps:
 """
 
 if __name__ == "__main__":
-    #add handling for command line arguments here
     main()
