@@ -42,3 +42,10 @@ Current Plan:
 4. **Data Visualization**:
     - Use Flask (with Streamlit or Dash) to create a web application that displays the data in a user-friendly way and allows for the user to interact with the data or request data that is not currently being held in GCP
         - Flask app with Dash in iframes or separate pages
+
+**Project Structure:**
+- src/ directory holds clients directory with wrappers around the APIs as well as main.py and api_server.py
+- utils/ directory holds utility functions for generating initial data
+- app/ directory holds the Flask + Dash app
+- database_design/ directory holds the database design and schema
+- dbt_project/ directory holds the DBT project
