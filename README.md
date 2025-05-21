@@ -10,18 +10,17 @@ Current Plan:
             - Allows for the user to get a screenshot of the company website
             - We might enhance this with a search engine to search for about section (Bing API, DuckDuck Go) or we could use a web crawler like Scrapy + BeautifulSoup using the given URLs from many of the entity tables from the source APIs
             - Allows the user to grab a PDF and text from the website
-        - Shodan Entity DB
-            - Has a list of a lot of public companies with their tickers and exchanges
-            - We planned to use this to grab executive compensation but it hasn't returned anything for that yet
         - Financial Modeling Prep
+            - This is the main library for financial data for this project
             - Has a lot of information available like executive compensation, stock prices, and other information
-                - Exec comp is locked behind the starter tier so might upgrade to that
             - Paid for starter tier
         - Polygon
             - Might use this for stock prices
         - Yfinance
             - Might use this for stock prices, earnings transcripts, etc.
             - This one is very useful but we might want to rate limit this
+        - Shodan
+            - Planned on using this but doesn't seem as useful anymore
         - Storage
             - Wrapper around GCP Cloud Storage to store the data
         - Secrets
