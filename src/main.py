@@ -33,46 +33,75 @@ from src.clients.secrets.secrets import Secret_Manager
 from src.clients.bq.bq import BQ_Client #might not use this
 
 #define functions
-#right now these are quick placeholders that we have to enhance and "arbitrage" calls on the apis
-def write_hist_prices_yf(ticker: str, start: str, end: str, bucket_name: str, file_name: str):
+def _write_base(client_func, file_path_func, *args, content_type='text/csv', **kwargs):
+    """Generic function to call an API method, get data, and write it to GCS.
+    Args:
+        client_func (Callable): Function to call for fetching data.
+        file_path_func (Callable): Function to generate the output file path.
+        *args: Positional args for the client_func.
+        content_type (str): Content type for upload.
+        **kwargs: Keyword args for client_func.
+    """
+    storage_client = GCS_Client_Wrapper()
+
+    logger.info(f"Calling {client_func.__name__} with args: {args}, kwargs: {kwargs}")
+    data = client_func(*args, **kwargs)
+
+    # If it's a DataFrame, convert to CSV
+    if isinstance(data, pd.DataFrame):
+        output = data.to_csv(index=False)
+    elif isinstance(data, (dict, list)):
+        output = json.dumps(data)
+        content_type = 'application/json'
+    elif isinstance(data, io.BytesIO):
+        output = data
+    else:
+        raise ValueError("Unsupported data type for upload")
+
+    file_path = file_path_func(*args, **kwargs)
+    logger.info(f"Writing file to: {file_path}")
+    storage_client.upload_object(file_path, output, content_type=content_type)
+
+def _generate_file_path(prefix: str, *args) -> str:
+    """Generates a file path based on the prefix and arguments."""
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    sanitized_args = [re.sub(r'\W+', '_', str(arg)) for arg in args]
+    arg_str = '_'.join(sanitized_args)
+    return f"{prefix}/{current_time}_{arg_str}.csv"
+
+# Define functions for each API call using the base methods
+def write_hist_prices_yf(ticker: str, start: str, end: str):
     """Fetches historical prices for a given ticker and writes to GCS.
     Args:
         ticker (str): The stock ticker symbol.
         start (str): The start date for the historical data (YYYY-MM-DD).
         end (str): The end date for the historical data (YYYY-MM-DD).
-        bucket_name (str): The GCS bucket name.
-        file_name (str): The file name to write to GCS.
     """
+    file_path = lambda *args, **kwargs: _generate_file_path("yfinance/hist_ticker", ticker)
     yf_client = YF_Client()
-    storage_client = GCS_Client_Wrapper()
-    
-    # Fetch historical data
-    data = yf_client.get_data(ticker, start, end)
-    
-    # Write to GCS
-    storage_client.upload_object(bucket_name, file_name, data.to_csv(index=False))
+    _write_base(yf_client.get_data, file_path, ticker, start, end)
 
-def write_hist_ticker_yf(ticker: str, period: str, interval: str):
-    """Fetches historical ticker data and writes to GCS.
+def write_hist_tickers_yf(tickers: list, period: str, interval: str):
+    """Fetches historical ticker data for multiple tickers and writes to GCS.
     Args:
-        ticker (str): The stock ticker symbol.
+        tickers (list): List of stock ticker symbols.
         period (str): The period for the historical data (e.g., '1mo').
         interval (str): The interval for the historical data (e.g., '1d').
     """
+    file_path = lambda tickers: _generate_file_path("yfinance/hist_tickers", tickers)
     yf_client = YF_Client()
-    storage_client = GCS_Client_Wrapper()
+    _write_base(yf_client.get_tickers_history, file_path, tickers, period, interval)
 
-    #should add error handling + arg handling (i.e. max period and interval options)
-    
-    # Fetch historical data
-    data = yf_client.get_ticker_history(ticker, period, interval)
-
-    # Set file name
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"yfinance/hist_ticker/{ticker}_{period}_{interval}_{current_time}.csv"
-    
-    # Write to GCS
-    storage_client.upload_object(file_name, data.to_csv(index=False), content_type='text/csv')
+def write_hist_ticker_yf(ticker: str, period: str, interval: str):
+    """Fetches historical ticker data for a ticker and writes to GCS.
+    Args:
+        tickers (str): ticker symbol
+        period (str): The period for the historical data (e.g., '1mo').
+        interval (str): The interval for the historical data (e.g., '1d').
+    """
+    file_path = lambda *args, **kwargs: _generate_file_path("yfinance/hist_ticker", ticker)
+    yf_client = YF_Client()
+    _write_base(yf_client.get_ticker_history, file_path, ticker, period, interval)
 
 def write_hist_ticker_polygon(ticker: str, start: str, end: str, timespan="day", multiplier=1, adjusted="true"):
     """Fetches historical ticker data from Polygon and writes to GCS.
@@ -84,30 +113,11 @@ def write_hist_ticker_polygon(ticker: str, start: str, end: str, timespan="day",
         multiplier (int): The multiplier to use with the timespan.
         adjusted (str): Whether to use adjusted prices ("true" or "false").
     """
-    # Get secret manager to retrieve the Polygon API key
     secret_manager = Secret_Manager()
-    polygon_api_key = secret_manager.access_secret("polygon-api-key")
-    
-    # Initialize clients
+    polygon_api_key = secret_manager.access_secret("pco-polygon")
     polygon_client = Polygon_Wrapper(polygon_api_key)
-    storage_client = GCS_Client_Wrapper()
-    
-    # Fetch historical data
-    data = polygon_client.get_historical_data(
-        ticker=ticker,
-        start=start,
-        end=end,
-        timespan=timespan,
-        multiplier=multiplier,
-        adjusted=adjusted
-    )
-    
-    # Set file name
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"polygon/hist_ticker/{ticker}_{start}_{end}_{timespan}_{multiplier}_{current_time}.csv"
-    
-    # Write to GCS
-    storage_client.upload_object(file_name, data.to_csv(index=False), content_type='text/csv')
+    file_name = lambda *args, **kwargs: _generate_file_path("polygon/hist_ticker", ticker)
+    _write_base(polygon_client.get_historical_data, file_name, ticker, start, end, timespan=timespan, multiplier=multiplier, adjusted=adjusted)
 
 def write_microlink_pdf(url: str):
     """Fetches a PDF from a URL using Microlink and writes to GCS.
@@ -115,18 +125,9 @@ def write_microlink_pdf(url: str):
         url (str): The URL to fetch the PDF from.
     """
     microlink_client = Microlink_Client()
-    storage_client = GCS_Client_Wrapper()
-    
-    # Fetch PDF
-    pdf_file = microlink_client.get_pdf_file(url)
 
-    # Set filename
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    sanitized_url = re.sub(r'\W+', '_', url)  # Replace non-word chars with underscores
-    file_name = f"microlink/pdf/{sanitized_url}_{current_time}.pdf"
-    
-    # Write to GCS
-    storage_client.upload_object(file_name, pdf_file, content_type='application/pdf')
+    file_path = lambda *args, **kwargs: _generate_file_path("microlink/pdf", url)
+    _write_base(microlink_client.get_pdf_file, file_path, url, content_type='application/pdf')
 
 def write_microlink_text(url: str):
     """Fetches text from a URL using Microlink and writes to GCS.
@@ -134,90 +135,64 @@ def write_microlink_text(url: str):
         url (str): The URL to fetch the text from.
     """
     microlink_client = Microlink_Client()
-    storage_client = GCS_Client_Wrapper()
-
-    """
-    Add function to Microlink_Client that wraps around get_url_data and pulls out dict of website text
-    """
-    
-    # Fetch text
-    response = microlink_client.get_url_data(url)
-    
-    # Set filename
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    sanitized_url = re.sub(r'\W+', '_', url)  # Replace non-word chars with underscores
-    file_name = f"microlink/text/{sanitized_url}_{current_time}.txt"
-    
-    # Write to GCS (it is a dict)
-    storage_client.upload_object(file_name, json.dumps(response), content_type='application/json')
+    file_path = lambda *args, **kwargs: _generate_file_path("microlink/text", url)
+    _write_base(microlink_client.get_url_data, file_path, url, content_type='application/json')
 
 def write_tickers_polygon():
-    """
-    This function should be the main dimension table for "tickers" representing different public companies.
-    """
-    pw = Polygon_Wrapper()
-    storage_client = GCS_Client_Wrapper()
-
-    # Fetch tickers
-    tickers = pw.get_tickers()
-
-    # Set file name
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"polygon/tickers/{current_time}.csv"
-
-    # Write to GCS
-    storage_client.upload_object(file_name, tickers.to_csv(index=False), content_type='text/csv')
+    secret_manager = Secret_Manager()
+    polygon_api_key = secret_manager.access_secret("pco-polygon")
+    polygon_client = Polygon_Wrapper(polygon_api_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("polygon/tickers")
+    _write_base(polygon_client.get_tickers, file_path)
 
 def write_exchanges_polygon():
-    """
-    This function should be the main dimension table for "exchanges" representing different public companies.
-    """
-    pw = Polygon_Wrapper()
-    storage_client = GCS_Client_Wrapper()
-
-    # Fetch exchanges
-    exchanges = pw.get_exchanges()
-
-    # Set file name
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"polygon/exchanges/{current_time}.csv"
-
-    # Write to GCS
-    storage_client.upload_object(file_name, exchanges.to_csv(index=False), content_type='text/csv')
+    secret_manager = Secret_Manager()
+    polygon_api_key = secret_manager.access_secret("pco-polygon")
+    polygon_client = Polygon_Wrapper(polygon_api_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("polygon/exchanges")
+    _write_base(polygon_client.get_exchanges, file_path)
 
 def write_tickers_fmp():
-    """
-    This function should be the main dimension table for "tickers" representing different public companies.
-    """
-    fmp_client = FMP_Client()
-    storage_client = GCS_Client_Wrapper()
-    
-    # Fetch tickers
-    tickers = fmp_client.get_tickers()
-    
-    # Set file name
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"fmp/tickers/{current_time}.csv"
-    
-    # Write to GCS
-    storage_client.upload_object(file_name, tickers.to_csv(index=False), content_type='text/csv')
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/tickers")
+    _write_base(fmp_client.get_tickers, file_path)
+
+def write_tickers_w_financials_fmp():
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/tickers_w_financials")
+    _write_base(fmp_client.get_tickers_with_financials, file_path)
 
 def write_exchanges_fmp():
-    """
-    This function should be the main dimension table for "exchanges" representing different public companies.
-    """
-    fmp_client = FMP_Client()
-    storage_client = GCS_Client_Wrapper()
-    
-    # Fetch exchanges
-    exchanges = fmp_client.get_exchanges()
-    
-    # Set file name
-    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"fmp/exchanges/{current_time}.csv"
-    
-    # Write to GCS
-    storage_client.upload_object(file_name, exchanges.to_csv(index=False), content_type='text/csv')
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/exchanges")
+    _write_base(fmp_client.get_exchanges, file_path)
+
+def write_countries_fmp():
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/countries")
+    _write_base(fmp_client.get_countries, file_path)
+
+def write_industries_fmp():
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/industries")
+    _write_base(fmp_client.get_industries, file_path)
+
+def write_sectors_fmp():
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/sectors")
+    _write_base(fmp_client.get_sectors, file_path)
 
 def write_tickers():
     """
