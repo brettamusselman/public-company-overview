@@ -2,6 +2,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 

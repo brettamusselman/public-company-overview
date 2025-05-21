@@ -218,9 +218,28 @@ def write_dimensions():
     write_industries_fmp()
     write_sectors_fmp()
 
+def write_facts(list_of_tickers: list):
+    """
+    This function should be the main fact table for "facts" representing different facts.
+    Args:
+        list_of_tickers (list): List of tickers to pull data for.
+    """
+    for ticker in list_of_tickers:
+        # write_hist_prices_yf(ticker, "2020-01-01", "2023-01-01")
+        # write_hist_ticker_yf(ticker, "1mo", "1d")
+        # write_hist_ticker_polygon(ticker, "2020-01-01", "2023-01-01", timespan="day", multiplier=1, adjusted="true")
+        pass
+
 def standard_workflow():
     """
     This function should represent a standard workflow where a ticker is entered and a bunh of data is pulled.
+    """
+    pass
+
+def daily_hist_ticker():
+    """
+    This function is for daily historical ticker data, pointing it to yf first, then fmp, then polygon.
+    It will limit the amount of data that can be retrieved to a certain amount.
     """
     pass
 
@@ -232,6 +251,8 @@ def daily_update():
     write_dimensions()
 
     #add list of tickers to pull and their respective fact table functions below
+    list_of_tickers=["MSFT", "AAPL", "GOOGL"]
+    write_facts(list_of_tickers)
 
 def cli_args() -> argparse.Namespace:
     """
@@ -349,7 +370,6 @@ def main():
 
 """
 Next Steps:
-- Add command line argument handling
 - Finish api_server.py to call this script
 - Deploy to Cloud Run with Docker container
 - Enhance logic for each of the functions to handle errors and edge cases
