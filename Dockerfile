@@ -1,19 +1,20 @@
-FROM python:3.12.6-slim
+# Use an official Python runtime as a base image
+FROM python:3.12-slim
 
-# Set the working directory to /app
-WORKDIR /app
+# Set the working directory in the container
+WORKDIR /src
 
-# Copy only the requirements first to cache dependencies
+# Copy requirements.txt from the root of your project into the container
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the code
-COPY src/ ./src/
+# Copy the source code into the container (from src/ directory on host to /src inside container)
+COPY src/ .
 
-# Set working dir to src so main.py can be run relative to it
-WORKDIR /app/src
+# Expose port (optional; useful for local dev/testing)
+EXPOSE 8080
 
-# Run the API server
+# Command to run the FastAPI app
 CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8080"]
