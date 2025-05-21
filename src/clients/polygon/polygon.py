@@ -226,7 +226,21 @@ class Polygon_Wrapper:
                                     run_parallel=run_parallel, max_concurrent_workers=max_concurrent_workers)
             
             logger.info(f"Fetched historical data for {ticker} from {start} to {end}")
-            return pd.DataFrame(aggs)
+            df = pd.DataFrame(aggs)
+            rename_dict = {
+                            'v': 'Volume',
+                            'vw': 'Vwap',  # volume-weighted average price
+                            'o': 'Open',
+                            'c': 'Close',
+                            'h': 'High',
+                            'l': 'Low',
+                            't': 'Timestamp',
+                            'n': 'Num_Transactions'
+                        }
+            df.rename(columns=rename_dict, inplace=True)
+            df['Datetime'] = pd.to_datetime(df['Timestamp'], unit='ms')
+            return df
+
         except Exception as e:
             logger.error(f"Exception occurred while fetching historical data: {str(e)}")
             raise
