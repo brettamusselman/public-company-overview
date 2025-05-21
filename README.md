@@ -49,3 +49,9 @@ Current Plan:
 - app/ directory holds the Flask + Dash app
 - database_design/ directory holds the database design and schema
 - dbt_project/ directory holds the DBT project
+
+**Possible Improvements:**
+- Switch write functions to use DLT
+- Add a web crawler to scrape the website for more information or find the write information
+- Add an AI model to analyze the data and provide insights and talk to the user about the information
+- Wrap some AutoML functionality to allow the user to forecast or find anomalies in the data
