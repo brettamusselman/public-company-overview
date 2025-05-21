@@ -24,13 +24,13 @@ logger = logging.getLogger(__name__)
 from src.clients.yfinance.yfinance import YF_Client
 from src.clients.fmp.fmp import FMP_Client
 from src.clients.microlink.microlink import Microlink_Client
-from src.clients.shodan.shodan import Shodan_Client
+from src.clients.shodan.shodan import Shodan_Client #might not use this
 from src.clients.polygon.polygon import Polygon_Wrapper
 
 #wrappers around GCP clients
 from src.clients.storage.storage import GCS_Client_Wrapper
 from src.clients.secrets.secrets import Secret_Manager
-from src.clients.bq.bq import BQ_Client
+from src.clients.bq.bq import BQ_Client #might not use this
 
 #define functions
 #right now these are quick placeholders that we have to enhance and "arbitrage" calls on the apis
@@ -137,28 +137,126 @@ def write_microlink_text(url: str):
     storage_client = GCS_Client_Wrapper()
 
     """
-    Add function to Microlink_Client that wraps around get_url and pulls out text or maybe csv of website.
+    Add function to Microlink_Client that wraps around get_url_data and pulls out dict of website text
     """
     
     # Fetch text
-    response = microlink_client.get_url(url)
+    response = microlink_client.get_url_data(url)
     
     # Set filename
     current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
     sanitized_url = re.sub(r'\W+', '_', url)  # Replace non-word chars with underscores
     file_name = f"microlink/text/{sanitized_url}_{current_time}.txt"
     
-    # Write to GCS
-    storage_client.upload_object(file_name, response.text, content_type='text/plain')
+    # Write to GCS (it is a dict)
+    storage_client.upload_object(file_name, json.dumps(response), content_type='application/json')
 
-def write_entities():
+def write_tickers_polygon():
     """
-    This function should be the main dimension table for "entities" representing different public companies.
-    Not sure which source system we should use for this yet. (shodan, polygon, yfinance, fmp?)
-    Also, we might want to handle CDC (change data capture) for this table.
-    Maybe includ source system and use all of the systems to get the data?
+    This function should be the main dimension table for "tickers" representing different public companies.
+    """
+    pw = Polygon_Wrapper()
+    storage_client = GCS_Client_Wrapper()
+
+    # Fetch tickers
+    tickers = pw.get_tickers()
+
+    # Set file name
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"polygon/tickers/{current_time}.csv"
+
+    # Write to GCS
+    storage_client.upload_object(file_name, tickers.to_csv(index=False), content_type='text/csv')
+
+def write_exchanges_polygon():
+    """
+    This function should be the main dimension table for "exchanges" representing different public companies.
+    """
+    pw = Polygon_Wrapper()
+    storage_client = GCS_Client_Wrapper()
+
+    # Fetch exchanges
+    exchanges = pw.get_exchanges()
+
+    # Set file name
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"polygon/exchanges/{current_time}.csv"
+
+    # Write to GCS
+    storage_client.upload_object(file_name, exchanges.to_csv(index=False), content_type='text/csv')
+
+def write_tickers_fmp():
+    """
+    This function should be the main dimension table for "tickers" representing different public companies.
+    """
+    fmp_client = FMP_Client()
+    storage_client = GCS_Client_Wrapper()
+    
+    # Fetch tickers
+    tickers = fmp_client.get_tickers()
+    
+    # Set file name
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"fmp/tickers/{current_time}.csv"
+    
+    # Write to GCS
+    storage_client.upload_object(file_name, tickers.to_csv(index=False), content_type='text/csv')
+
+def write_exchanges_fmp():
+    """
+    This function should be the main dimension table for "exchanges" representing different public companies.
+    """
+    fmp_client = FMP_Client()
+    storage_client = GCS_Client_Wrapper()
+    
+    # Fetch exchanges
+    exchanges = fmp_client.get_exchanges()
+    
+    # Set file name
+    current_time = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
+    file_name = f"fmp/exchanges/{current_time}.csv"
+    
+    # Write to GCS
+    storage_client.upload_object(file_name, exchanges.to_csv(index=False), content_type='text/csv')
+
+def write_tickers():
+    """
+    This function should be the main dimension table for "tickers" representing different public companies.
     """
     pass
+
+def standard_workflow():
+    """
+    This function should represent a standard workflow where a ticker is entered and a bunh of data is pulled.
+    """
+    pass
+
+def cli_args() -> argparse.Namespace:
+    """
+    This function should handle command line arguments.
+    It should parse the arguments and call the appropriate functions.
+    """
+    parser = argparse.ArgumentParser(description="Fetch data from various APIs and write to GCS.")
+    
+    # Add arguments
+    parser.add_argument("--yf-hist-prices", help="Fetch historical prices for a given ticker", action="store_true")
+    parser.add_argument("--yf-hist-ticker", help="Fetch historical ticker data", action="store_true")
+    parser.add_argument("--polygon-hist-ticker", help="Fetch historical ticker data from Polygon", action="store_true")
+    parser.add_argument("--microlink-pdf", help="Fetch PDF from a URL using Microlink", action="store_true")
+    parser.add_argument("--microlink-text", help="Fetch text from a URL using Microlink", action="store_true")
+    parser.add_argument("--fmp-tickers", help="Fetch tickers from FMP", action="store_true")
+    parser.add_argument("--fmp-exchanges", help="Fetch exchanges from FMP", action="store_true")
+    parser.add_argument("--polygon-tickers", help="Fetch tickers from Polygon", action="store_true")
+    parser.add_argument("--polygon-exchanges", help="Fetch exchanges from Polygon", action="store_true")
+    
+    # Add more arguments as needed
+    #ticker
+    parser.add_argument("--ticker", help="Ticker symbol")
+    #start and end dates
+    parser.add_argument("--start", help="Start date (YYYY-MM-DD)")
+    parser.add_argument("--end", help="End date (YYYY-MM-DD)")
+
+    return parser.parse_args()
 
 def main():
     """
@@ -169,9 +267,11 @@ def main():
 
 """
 Next Steps:
-- I know in Azure functions, you can write a function.py to handle HTTP methods and use that as a wrapper to act like an API
-  - If we can do something similar with Cloud Function or FastAPI/Flask, we should
+- Add command line argument handling
+- Finish api_server.py to call this script
+- Deploy to Cloud Run with Docker container
 - Enhance logic for each of the functions to handle errors and edge cases
+- Alot of the code is getting repetitive, might be good to make a base function to build off of
 """
 
 if __name__ == "__main__":
