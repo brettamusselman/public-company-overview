@@ -152,6 +152,20 @@ def write_exchanges_polygon():
     file_path = lambda *args, **kwargs: _generate_file_path("polygon/exchanges")
     _write_base(polygon_client.get_exchanges, file_path)
 
+def write_hist_ticker_fmp(ticker: str, start: str, end: str):
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/hist_ticker", ticker)
+    _write_base(fmp_client.get_ticker_history, file_path, ticker, start, end)
+
+def write_hist_ticker_interval_fmp(ticker: str, interval: str, from_date: str, to_date: str, nonadjusted: bool = False):
+    secret_manager = Secret_Manager()
+    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_client = FMP_Client(fmp_key)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/hist_ticker", ticker)
+    _write_base(fmp_client.get_ticker_history_interval, file_path, ticker, interval, from_date, to_date, nonadjusted=nonadjusted)
+
 def write_company_profile_fmp(ticker: str):
     secret_manager = Secret_Manager()
     fmp_key = secret_manager.access_secret("pco-fmp")
@@ -301,10 +315,18 @@ def write_facts(list_of_tickers: list):
     Args:
         list_of_tickers (list): List of tickers to pull data for.
     """
+    #get yesterday's date
+    yesterday = pd.Timestamp.now() - pd.Timedelta(days=1)
+    yesterday = yesterday.strftime("%Y-%m-%d")
+
+    #get 363 days before yesterday
+    start_date = pd.Timestamp.now() - pd.Timedelta(days=363)
+    start_date = start_date.strftime("%Y-%m-%d")
+
     for ticker in list_of_tickers:
-        # write_hist_prices_yf(ticker, "2020-01-01", "2023-01-01")
-        # write_hist_ticker_yf(ticker, "1mo", "1d")
-        # write_hist_ticker_polygon(ticker, "2020-01-01", "2023-01-01", timespan="day", multiplier=1, adjusted="true")
+        write_hist_ticker_yf(ticker, "2y", "1d")
+        write_hist_ticker_polygon(ticker, start_date, yesterday, timespan="day", multiplier=1, adjusted="true")
+
         pass
 
 def standard_workflow():
@@ -349,6 +371,8 @@ def cli_args() -> argparse.Namespace:
     parser.add_argument("--polygon-tickers", help="Fetch tickers from Polygon", action="store_true")
     parser.add_argument("--polygon-exchanges", help="Fetch exchanges from Polygon", action="store_true")
     parser.add_argument("--fmp-ciks", help="Fetch CIKs from FMP", action="store_true")
+    parser.add_argument("--fmp-hist-ticker", help="Fetch historical ticker data from FMP", action="store_true")
+    parser.add_argument("--fmp-hist-ticker-interval", help="Fetch historical ticker data with interval from FMP", action="store_true")
     parser.add_argument("--fmp-company-profile", help="Fetch company profile from FMP", action="store_true")
     parser.add_argument("--fmp-company-notes", help="Fetch company notes from FMP", action="store_true")
     parser.add_argument("--fmp-stock-peers", help="Fetch stock peers from FMP", action="store_true")
@@ -422,6 +446,18 @@ def main():
             logger.error("Missing required argument for --microlink-text: --url")
             return
         write_microlink_text(args.url)
+
+    if args.fmp_hist_ticker:
+        if not (args.ticker and args.start and args.end):
+            logger.error("Missing required arguments for --fmp-hist-ticker: --ticker, --start, --end")
+            return
+        write_hist_ticker_fmp(args.ticker, args.start, args.end)
+
+    if args.fmp_hist_ticker_interval:
+        if not (args.ticker and args.interval and args.from_date and args.to_date):
+            logger.error("Missing required arguments for --fmp-hist-ticker-interval: --ticker, --interval, --from_date, --to_date")
+            return
+        write_hist_ticker_interval_fmp(args.ticker, args.interval, args.from_date, args.to_date)
 
     if args.fmp_tickers:
         write_tickers_fmp()

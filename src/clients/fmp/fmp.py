@@ -86,6 +86,59 @@ class FMP_Client:
         except Exception as e:
             logger.error(f"Exception occurred while fetching data: {str(e)}")
             raise
+
+    def get_ticker_history(self, symbol: str, from_date: str = None, to_date: str = None) -> pd.DataFrame:
+        """Fetches comprehensive historical price and volume data for a specific stock symbol.
+        
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+            from_date (str, optional): Start date in YYYY-MM-DD format.
+            to_date (str, optional): End date in YYYY-MM-DD format.
+            
+        Returns:
+            pd.DataFrame: Historical price and volume data including open, high, low, close,
+                         volume, price changes, and volume-weighted average price (VWAP).
+        """
+        endpoint = "historical-price-eod/full"
+        params = {"symbol": symbol}
+        
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+            
+        return self._get_data(endpoint, params=params, version='stable', stable_end=True)
+    
+    def get_ticker_history_interval(self, symbol: str, interval: str = '4h', from_date: str = None, to_date: str = None,
+                                    nonadjusted: bool = False) -> pd.DataFrame:
+        """Fetches historical price and volume data for a specific stock symbol with a specified interval.
+        
+        Args:
+            symbol (str): The stock symbol to fetch data for.
+            interval (str): The interval for the historical data (e.g., '1d', '1h', '4h').
+            from_date (str, optional): Start date in YYYY-MM-DD format.
+            to_date (str, optional): End date in YYYY-MM-DD format.
+            nonadjusted (bool): Whether to fetch non-adjusted data.
+            
+        Returns:
+            pd.DataFrame: Historical price and volume data including open, high, low, close,
+                         volume, price changes, and volume-weighted average price (VWAP).
+        """
+        allowed_intervals = ['1min', '5min', '15min', '30min', '1h', '4h']
+        if interval not in allowed_intervals:
+            raise ValueError(f"Invalid interval. Allowed intervals are: {allowed_intervals}")
+        
+        endpoint = f"historical-chart/{interval}"
+        params = {"symbol": symbol}
+        
+        if from_date:
+            params["from"] = from_date
+        if to_date:
+            params["to"] = to_date
+        if nonadjusted:
+            params["nonadjusted"] = nonadjusted
+            
+        return self._get_data(endpoint, params=params)
     
     def get_company_profile(self, symbol: str) -> pd.DataFrame:
         """Fetches the company profile for a specific stock symbol.
