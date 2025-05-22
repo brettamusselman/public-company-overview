@@ -44,6 +44,7 @@ async def run_job(arg_list: ArgList):
             "status": "success",
             "stdout": result.stdout.strip(),
             "stderr": result.stderr.strip(),
+            "logging": logger.handlers[0].stream.getvalue(),
         }
 
     except subprocess.CalledProcessError as e:
@@ -52,6 +53,7 @@ async def run_job(arg_list: ArgList):
             "error": "Command execution failed",
             "stdout": e.stdout.strip(),
             "stderr": e.stderr.strip(),
+            "logging": logger.handlers[0].stream.getvalue(),
         })
 
     except Exception as e:
@@ -73,12 +75,14 @@ async def daily_update():
                 "error": "Daily update execution failed",
                 "stdout": result.stdout.strip(),
                 "stderr": result.stderr.strip(),
+                "logging": logger.handlers[0].stream.getvalue(),
             })
 
         return {
             "status": "success",
             "stdout": result.stdout.strip(),
             "stderr": result.stderr.strip(),
+            "loggging": logger.handlers[0].stream.getvalue(),
         }
     
     except subprocess.CalledProcessError as e:
@@ -87,6 +91,7 @@ async def daily_update():
             "error": "Daily update execution failed",
             "stdout": e.stdout.strip(),
             "stderr": e.stderr.strip(),
+            "logging": logger.handlers[0].stream.getvalue(),
         })
     
     except Exception as e:
@@ -113,6 +118,7 @@ async def standard_workflow(arg_list: ArgList):
             "status": "success",
             "stdout": result.stdout.strip(),
             "stderr": result.stderr.strip(),
+            "logging": logger.handlers[0].stream.getvalue(),
         }
 
     except subprocess.CalledProcessError as e:
@@ -121,6 +127,7 @@ async def standard_workflow(arg_list: ArgList):
             "error": "Command execution failed",
             "stdout": e.stdout.strip(),
             "stderr": e.stderr.strip(),
+            "logging": logger.handlers[0].stream.getvalue(),
         })
 
     except Exception as e:
