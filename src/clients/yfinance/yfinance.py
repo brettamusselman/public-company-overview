@@ -30,14 +30,9 @@ class YF_Client:
         """
         try:
             data = self.client.download(ticker, start=start, end=end)
-            #change Price to Date
-            data.rename(columns={'Date': 'Price'}, inplace=True)
 
-            #drop first row
-            data.drop(data.index[0], inplace=True)
-
-            #make column ticker and set to ticker
             data['Ticker'] = ticker
+            data.columns = data.columns.droplevel('Ticker') 
 
             logger.info(f"Fetched data for {ticker} from {start} to {end}")
             return data
@@ -111,6 +106,12 @@ class YF_Client:
         """
         try:
             history = self.client.Ticker(ticker).history(period=period, interval=interval)
+            history.columns = history.columns.str.replace(' ', '')
+            history['Ticker'] = ticker
+            cols = list(history.columns)
+            cols.pop()
+            cols.insert(len(cols) - 2, 'Ticker')
+            history = history[cols]
             logger.info(f"Fetched historical data for {ticker} with period {period} and interval {interval}")
             return history
         except Exception as e:

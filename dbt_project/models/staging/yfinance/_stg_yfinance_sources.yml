@@ -1,0 +1,36 @@
+# requires you install external tables plugin with 'dbt deps'
+# then to stage external tables, run 'dbt run-operation stage_external_sources'
+version: 2
+
+sources:
+  - name: yf_external_source # This is the source name you'll use in ref() or source()
+    database: public-company-overview
+    schema: pco_dataset
+    loader: gcloud storage
+    tables:
+      - name: stg_yfinance__hist_ticker_ext # Name of the BQ external table
+        description: "External table for FMP company profiles CSV files from GCS."
+        external:
+          location: "gs://pco-store/yfinance/hist_ticker/*.csv" # Path to your CSV files
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+            allow_jagged_rows: TRUE
+        columns: #External read as string, then reformat in further staging step
+          - name: Open
+            data_type: STRING
+          - name: High
+            data_type: STRING
+          - name: Low
+            data_type: STRING
+          - name: Close
+            data_type: STRING
+          - name: Volume
+            data_type: STRING
+          - name: Ticker
+            data_type: STRING
+          - name: Dividends
+            data_type: STRING
+          - name: StockSplits
+            data_type: STRING
+

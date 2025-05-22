@@ -1,11 +1,14 @@
-name: 'public-company-overview'
+name: 'public_company_overview_dbt'
 version: 1.0.0
 
-profile: 'public-company-overview'
+profile: 'public_company_overview'
 target-path: 'target'
 
+vars:
+  past_proof_date: '1900-01-01'
+
 models:
-  public-company-overview:
+  public_company_overview_dbt:
     staging:
       +materialized: incremental
     intermediate:
