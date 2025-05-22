@@ -124,7 +124,7 @@ class FMP_Client:
             pd.DataFrame: Historical price and volume data including open, high, low, close,
                          volume, price changes, and volume-weighted average price (VWAP).
         """
-        allowed_intervals = ['1min', '5min', '15min', '30min', '1h', '4h']
+        allowed_intervals = ['1min', '5min', '15min', '30min', '1hour', '4hour']
         if interval not in allowed_intervals:
             raise ValueError(f"Invalid interval. Allowed intervals are: {allowed_intervals}")
         
