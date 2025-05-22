@@ -163,7 +163,7 @@ def write_hist_ticker_interval_fmp(ticker: str, interval: str, from_date: str, t
     secret_manager = Secret_Manager()
     fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
-    file_path = lambda *args, **kwargs: _generate_file_path("fmp/hist_ticker", ticker)
+    file_path = lambda *args, **kwargs: _generate_file_path(f"fmp/hist_ticker_{interval}", ticker)
     _write_base(fmp_client.get_ticker_history_interval, file_path, ticker, interval, from_date, to_date, nonadjusted=nonadjusted)
 
 def write_company_profile_fmp(ticker: str):
