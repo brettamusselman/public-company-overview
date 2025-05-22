@@ -84,3 +84,37 @@ async def daily_update():
     except Exception as e:
         logger.exception("Unexpected error while running daily update")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/standard-workflow")
+async def standard_workflow(arg_list: ArgList):
+    logger.info(f"Received standard workflow args: {arg_list.args}")
+
+    if not arg_list.args:
+        raise HTTPException(status_code=400, detail="Missing required CLI args")
+
+    try:
+        MAIN_PATH = os.path.join(os.path.dirname(__file__), "main.py")
+        cmd = ["python", MAIN_PATH] + arg_list.args
+        logger.info(f"Executing command: {' '.join(cmd)}")
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+
+        logger.info("Standard workflow executed successfully")
+
+        return {
+            "status": "success",
+            "stdout": result.stdout.strip(),
+            "stderr": result.stderr.strip(),
+        }
+
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Command failed: {e.stderr}")
+        raise HTTPException(status_code=500, detail={
+            "error": "Command execution failed",
+            "stdout": e.stdout.strip(),
+            "stderr": e.stderr.strip(),
+        })
+
+    except Exception as e:
+        logger.exception("Unexpected error while running standard workflow")
+        raise HTTPException(status_code=500, detail=str(e))

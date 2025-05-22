@@ -355,7 +355,7 @@ def standard_workflow(ticker: str):
     write_hist_ticker_polygon(ticker, "2y", "1d", timespan="day", multiplier=1, adjusted="true")
     yesterday = pd.Timestamp.now() - pd.Timedelta(days=1)
     yesterday = yesterday.strftime("%Y-%m-%d")
-    start_date = pd.Timestamp.now() - pd.Timedelta(days=364)
+    start_date = pd.Timestamp.now() - pd.Timedelta(days=1800) #change this since Starter tier gets up to 5 years of historical data
     start_date = start_date.strftime("%Y-%m-%d")
     write_hist_ticker_fmp(ticker, start_date, yesterday)
 
@@ -372,6 +372,11 @@ def standard_workflow(ticker: str):
     write_cash_flow_fmp(ticker)
     
     #add this later but get url and get pdf and text from microlink
+    yf_client = YF_Client()
+    ticker_info = yf_client.get_ticker_info(ticker)
+    url = ticker_info.get('website')
+    write_microlink_pdf(url)
+    write_microlink_text(url)
 
 def daily_hist_ticker():
     """
@@ -394,6 +399,7 @@ def daily_update():
     list_of_tickers = [ticker.split('-')[0] for ticker in list_of_tickers]
     write_facts(list_of_tickers)
 
+#we could separate this into a different module and probably do the same with the write functions
 def cli_args() -> argparse.Namespace:
     """
     This function should handle command line arguments.
