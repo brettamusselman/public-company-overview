@@ -64,8 +64,16 @@ async def daily_update():
         MAIN_PATH = os.path.join(os.path.dirname(__file__), "main.py")
         cmd = ["python", MAIN_PATH, "--daily-update"]
         logger.info(f"Executing daily update command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)
         logger.info("Daily update executed successfully")
+
+        if result.returncode != 0:
+            logger.error(f"Daily update command failed: {result.stderr}")
+            raise HTTPException(status_code=500, detail={
+                "error": "Daily update execution failed",
+                "stdout": result.stdout.strip(),
+                "stderr": result.stderr.strip(),
+            })
 
         return {
             "status": "success",
