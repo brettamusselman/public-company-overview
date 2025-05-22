@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code from host's src/ to container's /src
-COPY src/ .
+COPY . .
 
 # Expose port
 EXPOSE 8080
