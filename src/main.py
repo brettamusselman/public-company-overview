@@ -325,26 +325,82 @@ def write_facts(list_of_tickers: list):
     start_date = start_date.strftime("%Y-%m-%d")
 
     for ticker in list_of_tickers:
-        write_hist_ticker_yf(ticker, "2y", "1d")
-        write_hist_ticker_polygon(ticker, start_date, yesterday, timespan="day", multiplier=1, adjusted="true")
-        write_hist_ticker_fmp(ticker, start_date, yesterday)
-        write_hist_ticker_interval_fmp(ticker, "4hour", start_date, yesterday)
-        write_hist_ticker_interval_fmp(ticker, "1hour", start_date, yesterday)
-        write_hist_ticker_interval_fmp(ticker, "30min", start_date, yesterday)
-        write_hist_ticker_interval_fmp(ticker, "15min", start_date, yesterday)
-        write_hist_ticker_interval_fmp(ticker, "5min", start_date, yesterday)
-        write_hist_ticker_interval_fmp(ticker, "1min", start_date, yesterday)
-        write_balance_sheet_fmp(ticker)
-        write_income_statement_fmp(ticker)
-        write_cash_flow_fmp(ticker)
-        write_stock_peers_fmp(ticker)
-        write_stock_news_fmp(ticker)
-        write_company_profile_fmp(ticker)
-        write_company_notes_fmp(ticker)
-        write_employee_count_fmp(ticker)
-        write_key_executives_fmp(ticker) #this is actually a dimension table but you need a ticker so we run it in facts
-        write_exec_comp_fmp(ticker)
-        pass
+        try:
+            write_hist_ticker_yf(ticker, "2y", "1d")
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from YF: {e}")
+        try:
+            write_hist_ticker_polygon(ticker, "2y", "1d", timespan="day", multiplier=1, adjusted="true")
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from Polygon: {e}")
+        try:
+            write_hist_ticker_fmp(ticker, start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP: {e}")
+        try:
+            write_hist_ticker_interval_fmp(ticker, "4hour", start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
+        try:
+            write_hist_ticker_interval_fmp(ticker, "1hour", start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
+        try:    
+            write_hist_ticker_interval_fmp(ticker, "30min", start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
+        try:   
+            write_hist_ticker_interval_fmp(ticker, "15min", start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
+        try:
+            write_hist_ticker_interval_fmp(ticker, "5min", start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
+        try:
+            write_hist_ticker_interval_fmp(ticker, "1min", start_date, yesterday)
+        except Exception as e:
+            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
+        try:
+            write_balance_sheet_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch balance sheet data for {ticker} from FMP: {e}")
+        try:  
+            write_income_statement_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch income statement data for {ticker} from FMP: {e}")
+        try:
+            write_cash_flow_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch cash flow data for {ticker} from FMP: {e}")
+        try:
+            write_stock_peers_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch stock peers data for {ticker} from FMP: {e}")
+        try:
+            write_stock_news_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch stock news data for {ticker} from FMP: {e}")
+        try:
+            write_company_profile_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch company profile data for {ticker} from FMP: {e}")
+        try:
+            write_company_notes_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch company notes data for {ticker} from FMP: {e}")
+        try:
+            write_employee_count_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch employee count data for {ticker} from FMP: {e}")
+        try:
+            write_key_executives_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch key executives data for {ticker} from FMP: {e}")
+        try:
+            write_exec_comp_fmp(ticker)
+        except Exception as e:
+            logging.warning(f"Failed to fetch executive compensation data for {ticker} from FMP: {e}")
 
 def standard_workflow(ticker: str):
     """
