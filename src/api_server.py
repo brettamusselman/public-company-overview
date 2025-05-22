@@ -57,3 +57,30 @@ async def run_job(arg_list: ArgList):
     except Exception as e:
         logger.exception("Unexpected error while running job")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/daily-update")
+async def daily_update():
+    try:
+        MAIN_PATH = os.path.join(os.path.dirname(__file__), "main.py")
+        cmd = ["python", MAIN_PATH, "--daily-update"]
+        logger.info(f"Executing daily update command: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        logger.info("Daily update executed successfully")
+
+        return {
+            "status": "success",
+            "stdout": result.stdout.strip(),
+            "stderr": result.stderr.strip(),
+        }
+    
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Daily update command failed: {e.stderr}")
+        raise HTTPException(status_code=500, detail={
+            "error": "Daily update execution failed",
+            "stdout": e.stdout.strip(),
+            "stderr": e.stderr.strip(),
+        })
+    
+    except Exception as e:
+        logger.exception("Unexpected error while running daily update")
+        raise HTTPException(status_code=500, detail=str(e))
