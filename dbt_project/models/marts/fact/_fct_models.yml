@@ -1,8 +1,8 @@
 version: 2
 
 models:
-  - name: stg_yfinance__hist_ticker
-    description: "Staging model for Yahoo Finance historical stock tickers"
+  - name: fct__hist_ticker
+    description: "Fact model for historical stock tickers"
     columns:
       - name: Ticker
         tests:
@@ -18,5 +18,8 @@ models:
         tests:
           - not_null
       - name: DBTLoadedAtStaging
+        tests:
+          - not_null
+      - name: Recency
         tests:
           - not_null

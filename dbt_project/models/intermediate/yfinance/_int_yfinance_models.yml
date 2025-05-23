@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: int_yfinance__hist_ticker
+    description: "Int model for Yahoo Finance historical stock tickers"
+    columns:
+      - name: Ticker
+        tests:
+          - not_null
+      - name: Open
+      - name: High
+      - name: Low
+      - name: Close
+      - name: Volume
+      - name: Dividends
+      - name: StockSplits
+      - name: FileTimestamp
+        tests:
+          - not_null
+      - name: DBTLoadedAtStaging
+        tests:
+          - not_null

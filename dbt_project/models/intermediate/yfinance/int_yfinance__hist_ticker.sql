@@ -1,13 +1,14 @@
 {{
   config(
-    materialized='incremental'
+    materialized='incremental',
+    cluster_by=["Ticker"]
   )
 }}
 
 WITH source_data AS (
     SELECT *,
     _FILE_NAME as source_gcs_file_path
-    FROM {{ source('yf_external_source', 'stg_yfinance__hist_ticker_ext') }}
+    FROM {{ source('yf_external_source', 'stg_yfinance__hist_ticker') }}
 ),
 
 renamed_and_casted AS (

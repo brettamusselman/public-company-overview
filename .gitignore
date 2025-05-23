@@ -8,3 +8,5 @@ __pycache__/
 
 # DBT artifacts
 target/
+
+dbt_project/dbt_packages/*

@@ -8,7 +8,7 @@ sources:
     schema: pco_dataset
     loader: gcloud storage
     tables:
-      - name: stg_yfinance__hist_ticker_ext # Name of the BQ external table
+      - name: stg_yfinance__hist_ticker # Name of the BQ external table
         description: "External table for FMP company profiles CSV files from GCS."
         external:
           location: "gs://pco-store/yfinance/hist_ticker/*.csv" # Path to your CSV files
