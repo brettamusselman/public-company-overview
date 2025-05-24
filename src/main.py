@@ -338,30 +338,6 @@ def write_facts(list_of_tickers: list):
         except Exception as e:
             logging.warning(f"Failed to fetch historical data for {ticker} from FMP: {e}")
         try:
-            write_hist_ticker_interval_fmp(ticker, "4hour", start_date, yesterday)
-        except Exception as e:
-            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
-        try:
-            write_hist_ticker_interval_fmp(ticker, "1hour", start_date, yesterday)
-        except Exception as e:
-            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
-        try:    
-            write_hist_ticker_interval_fmp(ticker, "30min", start_date, yesterday)
-        except Exception as e:
-            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
-        try:   
-            write_hist_ticker_interval_fmp(ticker, "15min", start_date, yesterday)
-        except Exception as e:
-            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
-        try:
-            write_hist_ticker_interval_fmp(ticker, "5min", start_date, yesterday)
-        except Exception as e:
-            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
-        try:
-            write_hist_ticker_interval_fmp(ticker, "1min", start_date, yesterday)
-        except Exception as e:
-            logging.warning(f"Failed to fetch historical data for {ticker} from FMP with interval: {e}")
-        try:
             write_balance_sheet_fmp(ticker)
         except Exception as e:
             logging.warning(f"Failed to fetch balance sheet data for {ticker} from FMP: {e}")
