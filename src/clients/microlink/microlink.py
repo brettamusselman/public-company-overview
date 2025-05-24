@@ -121,7 +121,7 @@ class Microlink_Client:
         pdf_file = pdf_response.json()['data']['pdf']['url']
 
         #request the pdf file
-        pdf_file_response = requests.get(pdf_file)
+        pdf_file_response = requests.get(pdf_file, timeout=120)
 
         if pdf_file_response.status_code != 200:
             logger.error(f"Error fetching PDF file: {pdf_file_response.status_code} - {pdf_file_response.text}")

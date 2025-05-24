@@ -408,9 +408,11 @@ def standard_workflow(ticker: str):
     """
     #grab daily ticker history for the last 2 years
     write_hist_ticker_yf(ticker, "2y", "1d")
-    write_hist_ticker_polygon(ticker, "2y", "1d", timespan="day", multiplier=1, adjusted="true")
     yesterday = pd.Timestamp.now() - pd.Timedelta(days=1)
     yesterday = yesterday.strftime("%Y-%m-%d")
+    start_date = pd.Timestamp.now() - pd.Timedelta(days=1800) #polygon start
+    start_date = start_date.strftime("%Y-%m-%d")
+    write_hist_ticker_polygon(ticker, start_date, yesterday, timespan="day", multiplier=1, adjusted="true")
     start_date = pd.Timestamp.now() - pd.Timedelta(days=1800) #change this since Starter tier gets up to 5 years of historical data
     start_date = start_date.strftime("%Y-%m-%d")
     write_hist_ticker_fmp(ticker, start_date, yesterday)
