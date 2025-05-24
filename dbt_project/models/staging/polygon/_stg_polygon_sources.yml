@@ -1,0 +1,37 @@
+# requires you install external tables plugin with 'dbt deps'
+# then to stage external tables, run 'dbt run-operation stage_external_sources'
+version: 2
+
+sources:
+  - name: polygon_external_source # This is the source name you'll use in ref() or source()
+    database: public-company-overview
+    schema: pco_dataset
+    loader: gcloud storage
+    tables:
+      - name: stg_polygon__hist_ticker # Name of the BQ external table
+        description: "External table for Polygon hist ticker CSV files from GCS."
+        external:
+          location: "gs://pco-store/polygon/hist_ticker/*.csv" # Path to your CSV files
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns: #External read as string, then reformat in further staging step
+          - name: Volume
+            data_type: STRING
+          - name: Vwap
+            data_type: STRING
+          - name: Open
+            data_type: STRING
+          - name: Close
+            data_type: STRING
+          - name: High
+            data_type: STRING
+          - name: Low
+            data_type: STRING
+          - name: Timestamp
+            data_type: STRING
+          - name: Num_Transactions
+            data_type: STRING
+          - name: Datetime
+            data_type: STRING
+

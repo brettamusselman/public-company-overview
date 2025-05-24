@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: int_polygon__hist_ticker
+    description: "Intermediate model for Polygon historical stock ticker data."
+    columns:
+      - name: Datetime
+        tests:
+          - not_null
+      - name: Ticker
+        tests:
+          - not_null
+      - name: Open
+      - name: High
+      - name: Low
+      - name: Close
+      - name: Volume
+      - name: Vwap
+      - name: NumTransactions 
+      - name: FileTimestamp
+        tests:
+          - not_null
+      - name: DBTLoadedAtStaging 
+        tests:
+          - not_null
