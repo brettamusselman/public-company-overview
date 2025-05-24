@@ -656,7 +656,10 @@ def main():
         daily_update()
 
     if args.standard_workflow:
-        standard_workflow()
+        if not args.ticker:
+            logger.error("Missing required argument for --standard-workflow: --ticker")
+            return
+        standard_workflow(args.ticker)
 
 """
 Next Steps:
