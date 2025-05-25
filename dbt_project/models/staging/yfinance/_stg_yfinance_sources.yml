@@ -8,15 +8,36 @@ sources:
     schema: pco_dataset
     loader: gcloud storage
     tables:
-      - name: stg_yfinance__hist_ticker # Name of the BQ external table
-        description: "External table for FMP company profiles CSV files from GCS."
+      - name: stg_yfinance__hist_ticker_daily # Name of the BQ external table
         external:
-          location: "gs://pco-store/yfinance/hist_ticker/*.csv" # Path to your CSV files
+          location: "gs://dbt-testing/yfinance/hist_ticker/daily/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
-            allow_jagged_rows: TRUE
         columns: #External read as string, then reformat in further staging step
+          - name: Date
+            data_type: STRING
+          - name: Ticker
+            data_type: STRING
+          - name: Close
+            data_type: STRING
+          - name: High
+            data_type: STRING
+          - name: Low
+            data_type: STRING
+          - name: Open
+            data_type: STRING
+          - name: Volume
+            data_type: STRING
+      - name: stg_yfinance__hist_ticker_interval # Name of the BQ external table
+        external:
+          location: "gs://dbt-testing/yfinance/hist_ticker/interval/*.csv" # Path to your CSV files
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns: #External read as string, then reformat in further staging step
+          - name: Date
+            data_type: STRING
           - name: Open
             data_type: STRING
           - name: High
@@ -27,10 +48,35 @@ sources:
             data_type: STRING
           - name: Volume
             data_type: STRING
-          - name: Ticker
-            data_type: STRING
           - name: Dividends
             data_type: STRING
           - name: StockSplits
+            data_type: STRING
+          - name: Ticker
+            data_type: STRING
+      - name: stg_yfinance__hist_tickers_interval # Name of the BQ external table
+        external:
+          location: "gs://dbt-testing/yfinance/hist_tickers/interval/*.csv" # Path to your CSV files
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns: #External read as string, then reformat in further staging step
+          - name: Date
+            data_type: STRING
+          - name: Ticker
+            data_type: STRING
+          - name: Close
+            data_type: STRING
+          - name: Dividends
+            data_type: STRING
+          - name: High
+            data_type: STRING
+          - name: Low   
+            data_type: STRING
+          - name: Open
+            data_type: STRING
+          - name: StockSplits
+            data_type: STRING
+          - name: Volume
             data_type: STRING
 

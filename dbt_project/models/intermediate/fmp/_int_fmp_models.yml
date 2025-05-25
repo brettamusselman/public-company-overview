@@ -1,8 +1,8 @@
 version: 2
 
 models:
-  - name: int_yfinance__hist_ticker
-    description: "Int model for Yahoo Finance historical stock tickers"
+  - name: int_fmp__hist_ticker
+    description: "Intermediate model for FMP historical stock ticker data."
     columns:
       - name: Datetime
         tests:
@@ -15,8 +15,10 @@ models:
       - name: Low
       - name: Close
       - name: Volume
-      - name: Dividends
-      - name: StockSplits
+      - name: Vwap
+      - name: NumTransactions
+      - name: Change
+      - name: ChangePercent 
       - name: FileTimestamp
         tests:
           - not_null

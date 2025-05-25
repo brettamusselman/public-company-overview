@@ -30,9 +30,8 @@ class YF_Client:
         """
         try:
             data = self.client.download(ticker, start=start, end=end)
-
-            data['Ticker'] = ticker
-            data.columns = data.columns.droplevel('Ticker') 
+            data = data.stack(level=-1)
+            data.reset_index(inplace=True)
 
             logger.info(f"Fetched data for {ticker} from {start} to {end}")
             return data
@@ -51,6 +50,11 @@ class YF_Client:
         """
         try:
             data = self.client.Tickers(tickers).history(period=period, interval=interval)
+            data = data.stack(level=-1)
+            data.reset_index(inplace=True)
+            data.rename(columns={'Datetime': 'Date'}, inplace=True)
+            data.columns = data.columns.str.replace(' ', '')
+
             logger.info("Fetched all available tickers")
             return data
         except Exception as e:
@@ -107,11 +111,10 @@ class YF_Client:
         try:
             history = self.client.Ticker(ticker).history(period=period, interval=interval)
             history.columns = history.columns.str.replace(' ', '')
+            history.reset_index(inplace=True)
+            history.rename(columns={'Datetime': 'Date'}, inplace=True)
             history['Ticker'] = ticker
-            cols = list(history.columns)
-            cols.pop()
-            cols.insert(len(cols) - 2, 'Ticker')
-            history = history[cols]
+
             logger.info(f"Fetched historical data for {ticker} with period {period} and interval {interval}")
             return history
         except Exception as e:

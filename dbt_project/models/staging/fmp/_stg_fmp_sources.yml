@@ -3,35 +3,37 @@
 version: 2
 
 sources:
-  - name: polygon_external_source # This is the source name you'll use in ref() or source()
+  - name: fmp_external_source # This is the source name you'll use in ref() or source()
     database: public-company-overview
     schema: pco_dataset
     loader: gcloud storage
     tables:
-      - name: stg_polygon__hist_ticker_interval # Name of the BQ external table
-        description: "External table for Polygon hist ticker CSV files from GCS."
+      - name: stg_fmp__hist_ticker_daily # Name of the BQ external table
+        description: "External table for FMP hist ticker CSV files from GCS."
         external:
-          location: "gs://dbt-testing/polygon/hist_ticker/interval/*.csv" # Path to your CSV files
+          location: "gs://dbt-testing/fmp/hist_ticker/daily/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
         columns: #External read as string, then reformat in further staging step
-          - name: Volume
+          - name: symbol
             data_type: STRING
-          - name: Vwap
+          - name: date
             data_type: STRING
-          - name: Open
+          - name: open
             data_type: STRING
-          - name: Close
+          - name: high
             data_type: STRING
-          - name: High
+          - name: low
             data_type: STRING
-          - name: Low
+          - name: close
             data_type: STRING
-          - name: Timestamp
+          - name: volume
             data_type: STRING
-          - name: Num_Transactions
+          - name: change
             data_type: STRING
-          - name: Datetime
+          - name: changePercent
+            data_type: STRING
+          - name: vwap
             data_type: STRING
 

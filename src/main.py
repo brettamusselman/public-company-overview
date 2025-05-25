@@ -77,7 +77,7 @@ def write_hist_prices_yf(ticker: str, start: str, end: str):
         start (str): The start date for the historical data (YYYY-MM-DD).
         end (str): The end date for the historical data (YYYY-MM-DD).
     """
-    file_path = lambda *args, **kwargs: _generate_file_path("yfinance/hist_ticker", ticker)
+    file_path = lambda *args, **kwargs: _generate_file_path("yfinance/hist_ticker/daily", ticker)
     yf_client = YF_Client()
     _write_base(yf_client.get_data, file_path, ticker, start, end)
 
@@ -88,7 +88,7 @@ def write_hist_tickers_yf(tickers: list, period: str, interval: str):
         period (str): The period for the historical data (e.g., '1mo').
         interval (str): The interval for the historical data (e.g., '1d').
     """
-    file_path = lambda tickers: _generate_file_path("yfinance/hist_tickers", tickers)
+    file_path = lambda *args, **kwargs: _generate_file_path(f"yfinance/hist_tickers/interval/{interval}", tickers)
     yf_client = YF_Client()
     _write_base(yf_client.get_tickers_history, file_path, tickers, period, interval)
 
@@ -99,7 +99,7 @@ def write_hist_ticker_yf(ticker: str, period: str, interval: str):
         period (str): The period for the historical data (e.g., '1mo').
         interval (str): The interval for the historical data (e.g., '1d').
     """
-    file_path = lambda *args, **kwargs: _generate_file_path("yfinance/hist_ticker", ticker)
+    file_path = lambda *args, **kwargs: _generate_file_path(f"yfinance/hist_ticker/interval/{interval}", ticker)
     yf_client = YF_Client()
     _write_base(yf_client.get_ticker_history, file_path, ticker, period, interval)
 
@@ -114,9 +114,9 @@ def write_hist_ticker_polygon(ticker: str, start: str, end: str, timespan="day",
         adjusted (str): Whether to use adjusted prices ("true" or "false").
     """
     secret_manager = Secret_Manager()
-    polygon_api_key = secret_manager.access_secret("pco-polygon")
+    polygon_api_key = secret_manager.get_secret("pco-polygon")
     polygon_client = Polygon_Wrapper(polygon_api_key)
-    file_name = lambda *args, **kwargs: _generate_file_path("polygon/hist_ticker", ticker)
+    file_name = lambda *args, **kwargs: _generate_file_path(f"polygon/hist_ticker/interval/{multiplier}{timespan}", ticker)
     _write_base(polygon_client.get_historical_data, file_name, ticker, start, end, timespan=timespan, multiplier=multiplier, adjusted=adjusted)
 
 def write_microlink_pdf(url: str):
@@ -154,16 +154,16 @@ def write_exchanges_polygon():
 
 def write_hist_ticker_fmp(ticker: str, start: str, end: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
-    file_path = lambda *args, **kwargs: _generate_file_path("fmp/hist_ticker", ticker)
+    file_path = lambda *args, **kwargs: _generate_file_path("fmp/hist_ticker/daily", ticker)
     _write_base(fmp_client.get_ticker_history, file_path, ticker, start, end)
 
 def write_hist_ticker_interval_fmp(ticker: str, interval: str, from_date: str, to_date: str, nonadjusted: bool = False):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
-    file_path = lambda *args, **kwargs: _generate_file_path("fmp/hist_ticker", ticker)
+    file_path = lambda *args, **kwargs: _generate_file_path(f"fmp/hist_ticker/interval/{interval}", ticker)
     _write_base(fmp_client.get_ticker_history_interval, file_path, ticker, interval, from_date, to_date, nonadjusted=nonadjusted)
 
 def write_company_profile_fmp(ticker: str):

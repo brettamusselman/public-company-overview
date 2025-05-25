@@ -12,6 +12,10 @@ models:
       - name: Low
       - name: Close
       - name: Volume
+      - name: Vwap
+      - name: Change
+      - name: ChangePercent
+      - name: NumTransactions
       - name: Dividends
       - name: StockSplits
       - name: FileTimestamp
@@ -20,6 +24,12 @@ models:
       - name: DBTLoadedAtStaging
         tests:
           - not_null
-      - name: Recency
+      - name: RecencyRank
+        tests:
+          - not_null
+      - name: Inter
+        tests:
+          - not_null
+      - name: Datetime
         tests:
           - not_null
