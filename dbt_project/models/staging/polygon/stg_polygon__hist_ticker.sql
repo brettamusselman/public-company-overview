@@ -28,6 +28,8 @@ SELECT
         WHEN 'day' THEN 'd'
         WHEN 'week' THEN 'wk'
         WHEN 'month' THEN 'mo'
+        WHEN 'quarter' THEN 'qtr'
+        WHEN 'year' THEN 'yr'
         ELSE '_unknown_unit_'
     END AS Inter,
 

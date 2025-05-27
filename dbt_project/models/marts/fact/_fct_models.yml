@@ -9,7 +9,7 @@ models:
       on_schema_change: "append_new_columns"
     constraints:
           - type: primary_key
-            columns: [Ticker, DateDimKey, TimeDimKey, Inter, RecencyRank]
+            columns: [Ticker, DateDimKey, TimeDimKey, IntervalDimKey, RecencyRank]
     columns:
       - name: Ticker
         data_type: STRING
@@ -47,8 +47,13 @@ models:
           - type: not_null
       - name: RecencyRank
         data_type: INT64
-      - name: Inter
+      - name: IntervalDimKey
         data_type: STRING
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__interval')
+            to_columns: [IntervalDimKey]
       - name: DataSource
         data_type: STRING
       - name: DateDimKey
@@ -65,67 +70,3 @@ models:
           - type: foreign_key
             to: ref('dim__time')
             to_columns: [TimeDimKey]
-  - name: dim__date
-    config:
-      contract:
-        enforced: true
-      on_schema_change: "append_new_columns"
-    constraints:
-      - type: primary_key
-        columns: [DateDimKey]
-    columns:
-      - name: DateDimKey
-        data_type: INT64
-        constraints:
-          - type: not_null
-      - name: EventDate
-        data_type: DATE
-        constraints:
-          - type: not_null
-      - name: YearNumber
-        data_type: INT64
-      - name: QuarterOfYear
-        data_type: INT64
-      - name: MonthOfYear
-        data_type: INT64
-      - name: DayOfMonth
-        data_type: INT64
-      - name: DayOfWeekNumber
-        data_type: INT64
-      - name: DayName
-        data_type: STRING    
-      - name: MonthName
-        data_type: STRING 
-      - name: WeekOfYearISO
-        data_type: INT64
-      - name: DayOfYear
-        data_type: INT64
-      - name: IsWeekend
-        data_type: BOOLEAN
-  - name: dim__time
-    config:
-      contract:
-        enforced: true
-      on_schema_change: "append_new_columns"
-    constraints:
-      - type: primary_key
-        columns: [TimeDimKey]
-    columns:
-      - name: TimeDimKey
-        data_type: INT64
-        constraints:
-          - type: not_null
-      - name: EventTime
-        data_type: TIME
-        constraints:
-          - type: not_null
-      - name: HourOfDay
-        data_type: INT64
-      - name: MinuteOfHour
-        data_type: INT64
-      - name: SecondOfMinute
-        data_type: INT64
-      - name: IsMarketHoursNY
-        data_type: BOOLEAN
-      - name: Time12HourFormat
-        data_type: STRING

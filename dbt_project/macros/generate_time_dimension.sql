@@ -1,52 +1,56 @@
-{% macro generate_date_dimension(source_relation, datetime_column_name, pk_name="DateDimKey", date_column_name="EventDate") %}
+{% macro generate_static_time_dimension(pk_name="TimeDimKey", time_column_name="EventTime") %}
+{#
+  Generates a static time dimension table for every minute of a 24-hour day.
+
+  Args:
+    pk_name: The desired name for the primary key of this time dimension.
+    time_column_name: The desired name for the main TIME type column in this dimension.
+#}
 
 {{
   config(
-    materialized='incremental',
+    materialized='table',
     unique_key=pk_name
   )
 }}
 
-WITH source_events AS (
-    SELECT
-        {{ datetime_column_name }} AS _event_datetime_from_source
-    FROM {{ source_relation }}
+WITH hours AS (
+    SELECT hour FROM UNNEST(GENERATE_ARRAY(0, 23)) AS hour
 ),
 
-distinct_dates_from_source AS (
-    SELECT DISTINCT
-        CAST(_event_datetime_from_source AS DATE) AS {{ date_column_name }}
-    FROM source_events
+minutes AS (
+    SELECT minute FROM UNNEST(GENERATE_ARRAY(0, 59)) AS minute
 ),
 
-dates_to_build AS (
+seconds AS (
+    SELECT second FROM UNNEST(GENERATE_ARRAY(0, 59)) AS second
+),
+
+time_spine AS (
     SELECT
-        src.{{ date_column_name }}
-    FROM distinct_dates_from_source src
-    {% if is_incremental() %}
-    LEFT JOIN {{ this }} AS dim_target
-        ON src.{{ date_column_name }} = dim_target.{{ date_column_name }}
-    WHERE dim_target.{{ date_column_name }} IS NULL 
-    {% endif %}
+        TIME(h.hour, m.minute, s.second) AS {{ time_column_name }} -- Creates TIME(hour, minute, seconds)
+    FROM hours h
+    CROSS JOIN minutes m
+    CROSS JOIN seconds s 
 )
 
 SELECT
-    CAST(FORMAT_DATE('%Y%m%d', dtb.{{ date_column_name }}) AS INT64) AS {{ pk_name }},
-    dtb.{{ date_column_name }},
-    EXTRACT(YEAR FROM dtb.{{ date_column_name }}) AS YearNumber,
-    EXTRACT(QUARTER FROM dtb.{{ date_column_name }}) AS QuarterOfYear,
-    EXTRACT(MONTH FROM dtb.{{ date_column_name }}) AS MonthOfYear,
-    EXTRACT(DAY FROM dtb.{{ date_column_name }}) AS DayOfMonth,
-    EXTRACT(DAYOFWEEK FROM dtb.{{ date_column_name }}) AS DayOfWeekNumber, -- 1 (Sunday) to 7 (Saturday)
-    FORMAT_DATE('%A', dtb.{{ date_column_name }}) AS DayName,
-    FORMAT_DATE('%B', dtb.{{ date_column_name }}) AS MonthName,
-    EXTRACT(WEEK FROM dtb.{{ date_column_name }}) AS WeekOfYearISO,
-    EXTRACT(DAYOFYEAR FROM dtb.{{ date_column_name }}) AS DayOfYear,
+    CAST(REPLACE(FORMAT_TIME('%T', ts.{{ time_column_name }}), ':', '') AS INT64) AS {{ pk_name }},
+    ts.{{ time_column_name }},
+    EXTRACT(HOUR FROM ts.{{ time_column_name }}) AS HourOfDay,
+    EXTRACT(MINUTE FROM ts.{{ time_column_name }}) AS MinuteOfHour,
+    EXTRACT(SECOND FROM ts.{{ time_column_name }}) AS SecondOfMinute,
     CASE
-        WHEN EXTRACT(DAYOFWEEK FROM dtb.{{ date_column_name }}) IN (1, 7) THEN TRUE
+        WHEN EXTRACT(HOUR FROM ts.{{ time_column_name }}) = 9 AND EXTRACT(MINUTE FROM ts.{{ time_column_name }}) >= 30 THEN TRUE -- Market open (9:30 AM)
+        WHEN EXTRACT(HOUR FROM ts.{{ time_column_name }}) > 9 AND EXTRACT(HOUR FROM ts.{{ time_column_name }}) < 16 THEN TRUE    -- During market hours (until 4 PM)
+        WHEN EXTRACT(HOUR FROM ts.{{ time_column_name }}) = 16 AND EXTRACT(MINUTE FROM ts.{{ time_column_name }}) = 0 THEN TRUE  -- Market close (4:00 PM)
         ELSE FALSE
-    END AS IsWeekend
+    END AS IsMarketHoursNY,
+
+    FORMAT_TIME('%I:%M %p', ts.{{ time_column_name }}) AS Time12HourFormat
 FROM
-    dates_to_build dtb
+    time_spine ts
+ORDER BY
+    ts.{{ time_column_name }}
 
 {% endmacro %}
