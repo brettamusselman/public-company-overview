@@ -3,23 +3,119 @@ version: 2
 models:
   - name: int_polygon__hist_ticker
     description: "Intermediate model for Polygon historical stock ticker data."
+    config:
+      contract:
+        enforced: true
+      on_schema_change: "append_new_columns"
+    constraints:
+          - type: primary_key
+            columns: [Ticker, DateDimKey, TimeDimKey, Inter, FileTimestamp]
     columns:
-      - name: Datetime
-        tests:
-          - not_null
       - name: Ticker
-        tests:
-          - not_null
-      - name: Open
-      - name: High
-      - name: Low
+        data_type: STRING
+        constraints:
+          - type: not_null
       - name: Close
+        data_type: FLOAT64
+      - name: High
+        data_type: FLOAT64
+      - name: Low
+        data_type: FLOAT64
+      - name: Open
+        data_type: FLOAT64
       - name: Volume
+        data_type: INT64
       - name: Vwap
-      - name: NumTransactions 
+        data_type: FLOAT64
+      - name: NumTransactions
+        data_type: INT64
+      - name: Inter
+        data_type: STRING
+        constraints:
+          - type: not_null
       - name: FileTimestamp
-        tests:
-          - not_null
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
       - name: DBTLoadedAtStaging 
-        tests:
-          - not_null
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DateDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim_polygon__date')
+            to_columns: [DateDimKey]
+      - name: TimeDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim_polygon__time')
+            to_columns: [TimeDimKey]
+  - name: dim_polygon__date
+    config:
+      contract:
+        enforced: true
+      on_schema_change: "append_new_columns"
+    constraints:
+      - type: primary_key
+        columns: [DateDimKey]
+    columns:
+      - name: DateDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+      - name: EventDate
+        data_type: DATE
+        constraints:
+          - type: not_null
+      - name: YearNumber
+        data_type: INT64
+      - name: QuarterOfYear
+        data_type: INT64
+      - name: MonthOfYear
+        data_type: INT64
+      - name: DayOfMonth
+        data_type: INT64
+      - name: DayOfWeekNumber
+        data_type: INT64
+      - name: DayName
+        data_type: STRING    
+      - name: MonthName
+        data_type: STRING 
+      - name: WeekOfYearISO
+        data_type: INT64
+      - name: DayOfYear
+        data_type: INT64
+      - name: IsWeekend
+        data_type: BOOLEAN
+  - name: dim_polygon__time
+    config:
+      contract:
+        enforced: true
+      on_schema_change: "append_new_columns"
+    constraints:
+      - type: primary_key
+        columns: [TimeDimKey]
+    columns:
+      - name: TimeDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+      - name: EventTime
+        data_type: TIME
+        constraints:
+          - type: not_null
+      - name: HourOfDay
+        data_type: INT64
+      - name: MinuteOfHour
+        data_type: INT64
+      - name: SecondOfMinute
+        data_type: INT64
+      - name: IsMarketHoursNY
+        data_type: BOOLEAN
+      - name: Time12HourFormat
+        data_type: STRING

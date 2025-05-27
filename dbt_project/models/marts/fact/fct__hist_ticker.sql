@@ -1,13 +1,8 @@
 {{
   config(
     materialized='table',
-    cluster_by=['Ticker', 'Inter'],
-    unique_key=['Ticker', 'Datetime', 'Inter', 'Recency'],
-    partition_by={
-      "field": "Datetime",
-      "data_type": "datetime",
-      "granularity": "day"
-    }
+    unique_key=['Ticker', 'Inter', 'DateDimKey', 'TimeDimKey', 'RecencyRank'],
+    cluster_by=['Ticker', 'Inter', 'DateDimKey', 'TimeDimKey']
   )
 }}
 
@@ -25,11 +20,12 @@ WITH source_fmp AS (
         NULL AS NumTransactions,
         Change,
         ChangePercent,
-        '1d' AS Inter, 
-        `Datetime`, 
+        Inter,
         FileTimestamp,
         DBTLoadedAtStaging,
-        'FMP' AS DataSource
+        'FMP' AS DataSource,
+        DateDimKey,
+        TimeDimKey
     FROM
         {{ ref('int_fmp__hist_ticker') }}
 ),
@@ -49,10 +45,11 @@ source_polygon AS (
         NULL AS Change,
         NULL AS ChangePercent,
         Inter,           
-        `Datetime`,     
         FileTimestamp,
         DBTLoadedAtStaging,
-        'Polygon' AS DataSource
+        'Polygon' AS DataSource,
+        DateDimKey,
+        TimeDimKey
     FROM
         {{ ref('int_polygon__hist_ticker') }}
 ),
@@ -72,10 +69,11 @@ source_yfinance AS (
         NULL AS Change,
         NULL AS ChangePercent,
         Inter,          
-        `Datetime`,  
         FileTimestamp,
         DBTLoadedAtStaging,
-        'YFinance' AS DataSource
+        'YFinance' AS DataSource,
+        DateDimKey,
+        TimeDimKey
     FROM
         {{ ref('int_yfinance__hist_ticker') }}
 ),
@@ -92,7 +90,7 @@ ranked_combined_data AS (
     SELECT
         *,
         DENSE_RANK() OVER (
-            PARTITION BY Ticker, `Datetime`, Inter
+            PARTITION BY Ticker, DateDimKey, TimeDimKey, Inter
             ORDER BY FileTimestamp DESC
         ) as RecencyRank
     FROM

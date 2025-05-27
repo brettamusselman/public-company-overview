@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_yfinance__hist_ticker
+    columns:
+      - name: Ticker
+        tests:
+          - not_null
+      - name: Close
+      - name: High
+      - name: Low
+      - name: Open
+      - name: Volume
+      - name: Dividends
+      - name: StockSplits
+      - name: Inter
+      - name: EventDateTime
+        tests:
+          - not_null
+      - name: FileTimestamp
+        tests:
+          - not_null
+      - name: DBTLoadedAtStaging
+        tests:
+          - not_null

@@ -1,128 +1,57 @@
 {{
   config(
     materialized='incremental',
-    cluster_by=['Ticker', 'Inter'],
-    partition_by={
-      "field": "Datetime",
-      "data_type": "datetime",
-      "granularity": "day"
-    }
+    cluster_by=['Ticker', 'Inter', 'DateDimKey', 'TimeDimKey'],
   )
 }}
 
-WITH hist_ticker_daily AS (
+WITH hist_ticker AS (
     SELECT *,
-    _FILE_NAME as source_gcs_file_path
-    FROM {{ source('yf_external_source', 'stg_yfinance__hist_ticker_daily') }}
+    FROM {{ ref('stg_yfinance__hist_ticker') }}
 ),
 
-hist_ticker_interval AS (
-    SELECT *,
-    _FILE_NAME as source_gcs_file_path
-    FROM {{ source('yf_external_source', 'stg_yfinance__hist_ticker_interval') }}
-),
-
-hist_tickers_interval AS (
-    SELECT *,
-    _FILE_NAME as source_gcs_file_path
-    FROM {{ source('yf_external_source', 'stg_yfinance__hist_tickers_interval') }}
-),
-
-cast_hist_ticker_daily AS (
+dim_date_lookup AS (
     SELECT
-        CAST(NULLIF(Ticker, '') AS STRING) AS Ticker,
-        CAST(`Close` AS FLOAT64) AS `Close`,
-        CAST(High AS FLOAT64) AS High,
-        CAST(Low AS FLOAT64) AS Low,
-        CAST(`Open` AS FLOAT64) AS `Open`,
-        CAST(Volume AS INT64) AS Volume,
-        NULL AS Dividends,
-        NULL AS StockSplits,
-        '1d' AS Inter,
-
-        PARSE_DATETIME('%Y-%m-%d', `Date`) AS `Datetime`,
-
-        -- Metdata from GCS
-        PARSE_TIMESTAMP(
-            '%Y%m%d_%H%M%S',
-            REGEXP_EXTRACT(source_gcs_file_path, r'(\d{8}_\d{6})'),
-            'America/New_York'
-        ) AS FileTimestamp,
-        CURRENT_TIMESTAMP() AS DBTLoadedAtStaging
-
-    FROM hist_ticker_daily
+        DateDimKey,
+        EventDate         
+    FROM
+        {{ ref('dim_yfinance__date') }}
 ),
 
-cast_hist_ticker_interval AS (
+dim_time_lookup AS (
     SELECT
-        CAST(NULLIF(Ticker, '') AS STRING) AS Ticker,
-        CAST(`Close` AS FLOAT64) AS `Close`,
-        CAST(High AS FLOAT64) AS High,
-        CAST(Low AS FLOAT64) AS Low,
-        CAST(`Open` AS FLOAT64) AS `Open`,
-        CAST(Volume AS INT64) AS Volume,
-        CAST(Dividends AS FLOAT64) AS Dividends,
-        CAST(StockSplits AS FLOAT64) AS StockSplits,
-        REGEXP_EXTRACT(source_gcs_file_path, r'/interval/([^/]+)/') AS Inter,
-
-        DATETIME(
-          PARSE_TIMESTAMP('%Y-%m-%d %H:%M:%S%Ez', `Date`),
-          'America/New_York'
-        ) AS `Datetime`,
-
-        -- Metdata from GCS
-        PARSE_TIMESTAMP(
-            '%Y%m%d_%H%M%S',
-            REGEXP_EXTRACT(source_gcs_file_path, r'(\d{8}_\d{6})'),
-            'America/New_York'
-        ) AS FileTimestamp,
-        CURRENT_TIMESTAMP() AS DBTLoadedAtStaging
-
-    FROM hist_ticker_interval
+        TimeDimKey, 
+        EventTime  
+    FROM
+        {{ ref('dim_yfinance__time') }}
 ),
 
-cast_hist_tickers_interval AS (
+hist_ticker_with_dim_keys AS (
     SELECT
-        CAST(NULLIF(Ticker, '') AS STRING) AS Ticker,
-        CAST(`Close` AS FLOAT64) AS `Close`,
-        CAST(High AS FLOAT64) AS High,
-        CAST(Low AS FLOAT64) AS Low,
-        CAST(`Open` AS FLOAT64) AS `Open`,
-        CAST(Volume AS INT64) AS Volume,
-        CAST(Dividends AS FLOAT64) AS Dividends,
-        CAST(StockSplits AS FLOAT64) AS StockSplits,
-        REGEXP_EXTRACT(source_gcs_file_path, r'/interval/([^/]+)/') AS Inter,
-        
-        COALESCE(
-            -- CASE 1: Parse as a full timestamp with offset.
-            DATETIME(
-                SAFE.PARSE_TIMESTAMP('%Y-%m-%d %H:%M:%S%Ez', `Date`),
-                'America/New_York'
-            ),
-            -- CASE 2: If its not a timestamp, because YF likes to mix formats on the same endpoint
-            SAFE.PARSE_DATETIME('%Y-%m-%d', `Date`)
-        ) AS `Datetime`,
-
-        -- Metdata from GCS
-        PARSE_TIMESTAMP(
-            '%Y%m%d_%H%M%S',
-            REGEXP_EXTRACT(source_gcs_file_path, r'(\d{8}_\d{6})'),
-            'America/New_York'
-        ) AS FileTimestamp,
-        CURRENT_TIMESTAMP() AS DBTLoadedAtStaging
-
-    FROM hist_tickers_interval
-),
-
-all_hist_tickers AS (
-    SELECT * FROM cast_hist_ticker_daily
-    UNION ALL
-    SELECT * FROM cast_hist_ticker_interval
-    UNION ALL
-    SELECT * FROM cast_hist_tickers_interval
+        bht.Ticker,
+        bht.Inter,
+        bht.Open,
+        bht.High,
+        bht.Low,
+        bht.Close,
+        bht.Volume,
+        bht.Dividends,
+        bht.StockSplits,
+        bht.FileTimestamp,
+        bht.DBTLoadedAtStaging,
+        ddl.DateDimKey,  
+        dtl.TimeDimKey 
+    FROM
+        hist_ticker bht
+    LEFT JOIN
+        dim_date_lookup ddl
+        ON CAST(bht.EventDateTime AS DATE) = ddl.EventDate
+    LEFT JOIN
+        dim_time_lookup dtl
+        ON CAST(bht.EventDateTime AS TIME) = dtl.EventTime
 )
 
-SELECT * FROM all_hist_tickers
+SELECT * FROM hist_ticker_with_dim_keys
 {% if is_incremental() %}
 WHERE FileTimestamp > (SELECT coalesce(max(FileTimestamp), PARSE_TIMESTAMP('%Y-%m-%d', '{{ var('past_proof_date') }}')) FROM {{ this }} )
 {% endif %}

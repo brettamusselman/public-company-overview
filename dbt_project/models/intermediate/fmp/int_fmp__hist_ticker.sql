@@ -1,46 +1,58 @@
 {{
   config(
     materialized='incremental',
-    cluster_by=['Ticker'],
-    partition_by={
-      "field": "Datetime",
-      "data_type": "datetime",
-      "granularity": "day"
-    }
+    cluster_by=['Ticker', 'Inter', 'DateDimKey', 'TimeDimKey'],
   )
 }}
 
-WITH source_data AS (
+WITH hist_ticker AS (
     SELECT *,
-    _FILE_NAME as source_gcs_file_path
-    FROM {{ source('fmp_external_source', 'stg_fmp__hist_ticker_daily') }}
+    FROM {{ ref('stg_fmp__hist_ticker') }}
 ),
 
-renamed_and_casted AS (
+dim_date_lookup AS (
     SELECT
-        CAST(symbol AS STRING) AS Ticker,
-        CAST(`close` AS FLOAT64) AS `Close`,
-        CAST(high AS FLOAT64) AS High,
-        CAST(low AS FLOAT64) AS Low,
-        CAST(`open` AS FLOAT64) AS `Open`,
-        CAST(volume AS INT64) AS Volume,
-        CAST(vwap AS FLOAT64) AS Vwap,
-        CAST(change AS FLOAT64) AS Change,
-        CAST(changePercent AS FLOAT64) AS ChangePercent,
-        PARSE_DATETIME('%Y-%m-%d', `date`) AS `Datetime`,  
+        DateDimKey,
+        EventDate         
+    FROM
+        {{ ref('dim_fmp__date') }}
+),
 
-        -- Metdata from GCS
-        PARSE_TIMESTAMP(
-            '%Y%m%d_%H%M%S',
-            REGEXP_EXTRACT(source_gcs_file_path, r'(\d{8}_\d{6})'),
-            'America/New_York'
-        ) AS FileTimestamp,
-        CURRENT_TIMESTAMP() AS DBTLoadedAtStaging
+dim_time_lookup AS (
+    SELECT
+        TimeDimKey,
+        EventTime         
+    FROM
+        {{ ref('dim_fmp__time') }}
+),
 
-    FROM source_data
+hist_ticker_with_dim_keys AS (
+    SELECT
+        bht.Ticker,
+        bht.Close,
+        bht.High,
+        bht.Low,
+        bht.Open,
+        bht.Volume,
+        bht.Vwap,
+        bht.Inter,
+        bht.Change,
+        bht.ChangePercent,
+        bht.FileTimestamp,
+        bht.DBTLoadedAtStaging,
+        ddl.DateDimKey,
+        dtl.TimeDimKey
+    FROM
+        hist_ticker bht
+    LEFT JOIN
+        dim_date_lookup ddl
+        ON CAST(bht.EventDateTime AS DATE) = ddl.EventDate
+    LEFT JOIN
+        dim_time_lookup dtl
+        ON CAST(bht.EventDateTime AS TIME) = dtl.EventTime
 )
 
-SELECT * FROM renamed_and_casted
+SELECT * FROM hist_ticker_with_dim_keys
 {% if is_incremental() %}
 WHERE FileTimestamp > (SELECT coalesce(max(FileTimestamp), PARSE_TIMESTAMP('%Y-%m-%d', '{{ var('past_proof_date') }}')) FROM {{ this }} )
 {% endif %}
