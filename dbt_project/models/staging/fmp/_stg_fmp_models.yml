@@ -2,3 +2,4 @@ version: 2
 
 models:
   - name: stg_fmp__hist_ticker
+  - name: stg_fmp_tickers

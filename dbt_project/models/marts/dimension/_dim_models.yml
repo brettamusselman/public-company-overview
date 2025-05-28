@@ -67,7 +67,6 @@ models:
         data_type: STRING
   - name: dim__interval
     config:
-      materialized: 'table'
       contract:
         enforced: true
       on_schema_change: "append_new_columns" 
@@ -99,3 +98,87 @@ models:
         data_type: INT64
         constraints:
           - type: not_null
+  - name: dim__exchanges
+    config:
+      contract:
+        enforced: true     
+      on_schema_change: "append_new_columns"
+    constraints:
+      - type: primary_key
+        columns: [ExchangeDimKey]
+    columns:
+      - name: ExchangeDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: ExchangeAcronym
+        data_type: STRING
+      - name: MIC
+        data_type: STRING
+      - name: OperatingMIC
+        data_type: STRING
+      - name: OperatingOrSegment
+        data_type: STRING
+      - name: ExchangeDescription
+        data_type: STRING
+      - name: ISOCountryCode
+        data_type: STRING
+      - name: Website
+        data_type: STRING
+      - name: SourceSystem
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: Rank
+        data_type: INT64
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: dim__tickers
+    config:
+      contract:
+        enforced: true
+      on_schema_change: "append_new_columns"
+    constraints:
+          - type: primary_key
+            columns: [TickerDimKey]
+    columns:
+      - name: TickerDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: CompanyName
+        data_type: STRING
+      - name: SourceSystem
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: Rank
+        data_type: INT64
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: ExchangeDimKey
+        data_type: STRING
+        constraints:
+          - type: foreign_key
+            to: ref('dim__exchanges')
+            to_columns: [ExchangeDimKey]

@@ -291,8 +291,8 @@ class FMP_Client:
         Returns:
             pd.DataFrame: The list of tickers as a DataFrame.
         """
-        endpoint = "stock-list"
-        return self._get_data(endpoint, version='stable', stable_end=True)
+        endpoint = "stock/list"
+        return self._get_data(endpoint, version='v3', stable_end=False)
 
     def get_tickers_with_financials(self) -> pd.DataFrame:
         """Fetches the list of tickers with financials.

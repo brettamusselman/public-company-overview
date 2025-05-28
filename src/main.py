@@ -140,14 +140,14 @@ def write_microlink_text(url: str):
 
 def write_tickers_polygon():
     secret_manager = Secret_Manager()
-    polygon_api_key = secret_manager.access_secret("pco-polygon")
+    polygon_api_key = secret_manager.get_secret("pco-polygon")
     polygon_client = Polygon_Wrapper(polygon_api_key)
     file_path = lambda *args, **kwargs: _generate_file_path("polygon/tickers")
     _write_base(polygon_client.get_tickers, file_path)
 
 def write_exchanges_polygon():
     secret_manager = Secret_Manager()
-    polygon_api_key = secret_manager.access_secret("pco-polygon")
+    polygon_api_key = secret_manager.get_secret("pco-polygon")
     polygon_client = Polygon_Wrapper(polygon_api_key)
     file_path = lambda *args, **kwargs: _generate_file_path("polygon/exchanges")
     _write_base(polygon_client.get_exchanges, file_path)
@@ -168,119 +168,119 @@ def write_hist_ticker_interval_fmp(ticker: str, interval: str, from_date: str, t
 
 def write_company_profile_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/company_profile", ticker)
     _write_base(fmp_client.get_company_profile, file_path, ticker)
 
 def write_company_notes_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/company_notes", ticker)
     _write_base(fmp_client.get_company_notes, file_path, ticker)
 
 def write_stock_peers_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/stock_peers", ticker)
     _write_base(fmp_client.get_stock_peers, file_path, ticker)
 
 def write_employee_count_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/employee_count", ticker)
     _write_base(fmp_client.get_employee_count, file_path, ticker)
 
 def write_income_statement_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/income_statement", ticker)
     _write_base(fmp_client.get_income_statement, file_path, ticker)
 
 def write_balance_sheet_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/balance_sheet", ticker)
     _write_base(fmp_client.get_balance_sheet, file_path, ticker)
 
 def write_cash_flow_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/cash_flow", ticker)
     _write_base(fmp_client.get_cash_flow, file_path, ticker)
 
 def write_stock_news_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/stock_news", ticker)
     _write_base(fmp_client.get_stock_news, file_path, ticker)
 
 def write_key_executives_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/key_executives", ticker)
     _write_base(fmp_client.get_key_executives, file_path, ticker)
 
 def write_exec_comp_fmp(ticker: str):
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/exec_comp", ticker)
     _write_base(fmp_client.get_exec_comp, file_path, ticker)
 
 def write_tickers_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/tickers")
     _write_base(fmp_client.get_tickers, file_path)
 
 def write_tickers_w_financials_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/tickers_w_financials")
     _write_base(fmp_client.get_tickers_with_financials, file_path)
 
 def write_ciks_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/ciks")
     _write_base(fmp_client.get_ciks, file_path)
 
 def write_exchanges_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/exchanges")
     _write_base(fmp_client.get_exchanges, file_path)
 
 def write_countries_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/countries")
     _write_base(fmp_client.get_countries, file_path)
 
 def write_industries_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/industries")
     _write_base(fmp_client.get_industries, file_path)
 
 def write_sectors_fmp():
     secret_manager = Secret_Manager()
-    fmp_key = secret_manager.access_secret("pco-fmp")
+    fmp_key = secret_manager.get_secret("pco-fmp")
     fmp_client = FMP_Client(fmp_key)
     file_path = lambda *args, **kwargs: _generate_file_path("fmp/sectors")
     _write_base(fmp_client.get_sectors, file_path)

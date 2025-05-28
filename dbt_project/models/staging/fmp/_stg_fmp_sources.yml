@@ -36,4 +36,33 @@ sources:
             data_type: STRING
           - name: vwap
             data_type: STRING
+      - name: stg_fmp__tickers_ext 
+        external:
+          location: "gs://dbt-testing/fmp/tickers/*.csv" 
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+            allow_quoted_newlines: true
+        columns:
+          - name: symbol
+            data_type: STRING
+          - name: name
+            data_type: STRING
+          - name: price
+            data_type: STRING
+          - name: exchange
+            data_type: STRING
+          - name: exchangeShortName
+            data_type: STRING
+          - name: type
+            data_type: STRING
+      - name: stg_fmp__exchanges_ext 
+        external:
+          location: "gs://dbt-testing/fmp/exchanges/*.csv" 
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns:
+          - name: exchange
+            data_type: STRING
 

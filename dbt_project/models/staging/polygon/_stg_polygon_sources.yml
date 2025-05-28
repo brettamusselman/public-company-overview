@@ -34,4 +34,70 @@ sources:
             data_type: STRING
           - name: Datetime
             data_type: STRING
+      - name: stg_polygon__exchanges_ext
+        external:
+          location: "gs://dbt-testing/polygon/exchanges/*.csv"
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns: 
+          - name: id
+            data_type: STRING
+          - name: type
+            data_type: STRING
+          - name: asset_class
+            data_type: STRING
+          - name: locale
+            data_type: STRING
+          - name: name
+            data_type: STRING
+          - name: acronym
+            data_type: STRING
+          - name: mic
+            data_type: STRING
+          - name: operating_mic
+            data_type: STRING
+          - name: participant_id
+            data_type: STRING
+          - name: url
+            data_type: STRING
+      - name: stg_polygon__tickers_ext
+        external:
+          location: "gs://dbt-testing/polygon/tickers/*.csv"
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns: 
+          - name: ticker
+            data_type: STRING
+          - name: name
+            data_type: STRING
+          - name: market
+            data_type: STRING
+          - name: locale
+            data_type: STRING
+          - name: primary_exchange
+            data_type: STRING
+          - name: type
+            data_type: STRING
+          - name: active
+            data_type: STRING
+          - name: currency_name
+            data_type: STRING
+          - name: cik
+            data_type: STRING
+          - name: composite_figi
+            data_type: STRING
+          - name: share_class_figi
+            data_type: STRING
+          - name: last_updated_utc
+            data_type: STRING
+          - name: currency_symbol
+            data_type: STRING
+          - name: base_currency_symbol
+            data_type: STRING
+          - name: base_currency_name
+            data_type: STRING
+          - name: source_feed
+            data_type: STRING
 
