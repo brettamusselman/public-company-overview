@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from dashboard import create_dash_app
 from request_page import create_request_app
 
@@ -10,7 +10,9 @@ create_request_app(server)       # Mounts at "/request/"
 
 @server.route('/')
 def home():
+    # change this if necesary
     return render_template('home.html', route='home')
+    # return redirect('/dash/')
 
 @server.route('/readiness_check')
 def readiness_check():
@@ -19,6 +21,7 @@ def readiness_check():
 @server.route('/dashboard')
 def dashboard():
     return render_template('home.html', route='dashboard')
+    #return redirect('/dash/')
 
 @server.route('/request')
 def request():
