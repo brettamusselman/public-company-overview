@@ -37,8 +37,6 @@ def create_dash_app(server: Flask) -> dash.Dash:
     data_sources = get_available_data_sources()
 
 
-    print("DEBUG: Layout is being set up!")
-
     dash_app.layout = html.Div([
         html.H1("📊 Ticker Overview Dashboard", style={'textAlign': 'center', 'marginBottom': '20px'}),
 
