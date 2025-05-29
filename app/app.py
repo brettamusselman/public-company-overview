@@ -12,6 +12,10 @@ create_request_app(server)       # Mounts at "/request/"
 def home():
     return render_template('home.html', route='home')
 
+@server.route('/readiness_check')
+def readiness_check():
+    return "App is running", 200
+
 @server.route('/dashboard')
 def dashboard():
     return render_template('home.html', route='dashboard')

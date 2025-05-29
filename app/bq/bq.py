@@ -1,24 +1,46 @@
+import os
+import logging
+import requests
+import pandas as pd
+import polars as pl
+from io import BytesIO
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
-import pandas as pd
-#polars is faster than pandas and can handle more data than pandas so might be good for reading from bq
-import polars as pl #we might want to use polars for performance reasons when in App and using memory
-import logging
-from io import BytesIO
+from google.oauth2 import service_account
+import google.auth
+
 from bq.queries import available_tickers, available_sources, stock_data_query_template
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 DEFAULT_PROJECT = "public-company-overview"
-#should dataset just be pco_dataset without the prefix?
 DEFAULT_DATASET = "public-company-overview.pco_dataset"
+
+def is_running_on_gcp():
+    try:
+        r = requests.get("http://metadata.google.internal", headers={"Metadata-Flavor": "Google"}, timeout=0.1)
+        return r.status_code == 200
+    except requests.exceptions.RequestException:
+        return False
+
+from google.auth import default as google_auth_default
 
 class BQ_Client:
     def __init__(self, project_id: str = DEFAULT_PROJECT, dataset_id: str = DEFAULT_DATASET):
-        self.client = bigquery.Client(project=project_id)
         self.project_id = project_id
         self.dataset_id = dataset_id
+
+        try:
+            if is_running_on_gcp():
+                self.client = bigquery.Client(project=project_id)
+            else:
+                # Automatically loads ADC from ~/.config/gcloud/ if available
+                creds, _ = google_auth_default()
+                self.client = bigquery.Client(credentials=creds, project=project_id)
+        except Exception as e:
+            logger.error("Failed to initialize BigQuery client: %s", e)
+            raise RuntimeError(f"BigQuery client initialization failed: {e}")
 
     def _get_table_ref(self, table_id: str):
         return self.client.dataset(self.dataset_id).table(table_id)

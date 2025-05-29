@@ -1,3 +1,5 @@
+App Link: https://public-company-overview.ue.r.appspot.com/
+
 This is a final project for the INFO 323 (Cloud Computing) course at Drexel University. 
 The problem we are attempting to solve is how a lot of investors want to get up to date really quickly with 
 company information so we want to create a platform that compiles information about the company like their performance, stock prices, a quick look at their website, and other information like executive compensation.
@@ -42,6 +44,8 @@ Current Plan:
 4. **Data Visualization**:
     - Use Flask (with Streamlit or Dash) to create a web application that displays the data in a user-friendly way and allows for the user to interact with the data or request data that is not currently being held in GCP
         - Flask app with Dash in iframes or separate pages
+        - Ended up using App Engine + Docker for this
+        - To deploy, CD into app directory and enter "gcloud app deploy" in the terminal
 
 **Project Structure:**
 - src/ directory holds clients directory with wrappers around the APIs as well as main.py and api_server.py
