@@ -1,16 +1,24 @@
 from flask import Flask, render_template
 from dashboard import create_dash_app
+from request_page import create_request_app
 
 server = Flask(__name__)
-create_dash_app(server)
+
+# Mount both Dash apps
+create_dash_app(server)          # Mounts at "/dash/"
+create_request_app(server)       # Mounts at "/request/"
 
 @server.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('home.html', route='home')
 
 @server.route('/dashboard')
-def dashboard_page():
-    return render_template('home.html')  # could use a different template too
+def dashboard():
+    return render_template('home.html', route='dashboard')
+
+@server.route('/request')
+def request():
+    return render_template('home.html', route='request')
 
 if __name__ == "__main__":
-    server.run(debug=True)
+    server.run(debug=True, host='0.0.0.0', port=8050)

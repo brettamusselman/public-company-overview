@@ -4,12 +4,19 @@
     <title>Public Company Overview</title>
 </head>
 <body>
-    <nav>
+    <nav style="margin-bottom: 20px;">
         <a href="/">Home</a> |
-        <a href="/dashboard">Dashboard</a>
+        <a href="/dashboard">Dashboard</a> |
+        <a href="/request">Trigger Workflow</a>
     </nav>
 
-    <!-- Render Dash in an iframe -->
-    <iframe src="/dash/" width="100%" height="600" style="border:none;"></iframe>
+    {% if route == 'dashboard' %}
+        <iframe src="/dash/" width="100%" height="800" style="border:none;"></iframe>
+    {% elif route == 'request' %}
+        <iframe src="/request/" width="100%" height="600" style="border:none;"></iframe>
+    {% else %}
+        <h1>Welcome</h1>
+        <p>Select a page from the navigation above.</p>
+    {% endif %}
 </body>
 </html>

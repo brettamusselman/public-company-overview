@@ -30,8 +30,7 @@ def get_stock_data_from_bq(ticker, start_date, end_date, granularity):
 
 # Create Dash app
 def create_dash_app(server: Flask) -> dash.Dash:
-    dash_app = dash.Dash(__name__, server=server, url_base_pathname='/')
-
+    dash_app = dash.Dash(__name__, server=server, url_base_pathname='/dash/')
 
     # Load available tickers and data sources
     tickers = get_available_tickers()
@@ -214,6 +213,3 @@ if __name__ == '__main__':
     server = Flask(__name__)
     app = create_dash_app(server)
     server.run(debug=True, host='0.0.0.0', port=8050)
-
-
-

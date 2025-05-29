@@ -5,7 +5,7 @@ import pandas as pd
 import polars as pl #we might want to use polars for performance reasons when in App and using memory
 import logging
 from io import BytesIO
-from queries import available_tickers, available_sources, stock_data_query_template
+from bq.queries import available_tickers, available_sources, stock_data_query_template
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -74,6 +74,7 @@ class BQ_Client:
             query_job = self.client.query(sql)
             results = query_job.result()
             logger.info(f"Executed query: {sql}")
+            return results
         except Exception as e:
             logger.error(f"Error executing query: {sql} - {str(e)}")
             raise
@@ -81,38 +82,21 @@ class BQ_Client:
     def get_dataframe(self, sql: str, use_polars: bool = False):
         """
         Run a SQL query and return the result as a DataFrame.
-
-        Parameters:
-        - sql: str — SQL query string
-        - use_polars: bool — If True, returns a Polars DataFrame instead of Pandas
-
-        Returns:
-        - pd.DataFrame or pl.DataFrame
         """
         try:
             results = self.query(sql)
-
-            # Download as bytes and load into the right DataFrame type
-            buffer = BytesIO()
-            self.client.extract_table(
-                results.destination,
-                destination_uris=[],
-                job_config=bigquery.job.ExtractJobConfig(destination_format="CSV"),
-            )
-            buffer.seek(0)
-
             if use_polars:
-                return pl.read_csv(buffer)
+                df = pd.DataFrame([dict(row) for row in results])
+                return pl.DataFrame(df)
             else:
-                return pd.read_csv(buffer)
-
+                return results.to_dataframe()
         except Exception as e:
             logger.error(f"Error fetching dataframe from query: {sql} - {str(e)}")
             raise
 
     def get_available_tickers(self) -> list:
         df = self.get_dataframe(available_tickers)
-        return df['Tickers'].tolist()
+        return df['Ticker'].tolist()
 
     def get_available_sources(self) -> list:
         df = self.get_dataframe(available_sources)
