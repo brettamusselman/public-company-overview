@@ -1,8 +1,8 @@
 {{
   config(
     materialized='table',
-    unique_key=['Ticker', 'IntervalDimKey', 'DateDimKey', 'TimeDimKey', 'RecencyRank'],
-    cluster_by=['Ticker', 'IntervalDimKey', 'DateDimKey', 'TimeDimKey']
+    unique_key=['TickerDimKey', 'IntervalDimKey', 'DateDimKey', 'TimeDimKey', 'RecencyRank'],
+    cluster_by=['TickerDimKey', 'IntervalDimKey', 'DateDimKey', 'TimeDimKey']
   )
 }}
 
@@ -104,12 +104,20 @@ dim_interval_lookup AS (
     FROM {{ ref('dim__interval') }} 
 ),
 
+dim_tickers_lookup AS (
+    SELECT
+        TickerDimKey,  
+        Ticker     
+    FROM {{ ref('dim__tickers') }} 
+),
+
 joined_with_dimensions AS (
     SELECT
         asc_data.*,
         ddl.DateDimKey,
         dtl.TimeDimKey,
-        dil.IntervalDimKey
+        dil.IntervalDimKey,
+        dtkl.TickerDimKey
     FROM all_sources_combined asc_data
     LEFT JOIN dim_date_lookup ddl
         ON CAST(asc_data.EventDateTime AS DATE) = ddl.EventDate
@@ -117,13 +125,15 @@ joined_with_dimensions AS (
         ON CAST(asc_data.EventDateTime AS TIME) = dtl.EventTime
     LEFT JOIN dim_interval_lookup dil
         ON asc_data.Inter = dil.IntervalValue
+    LEFT JOIN dim_tickers_lookup dtkl
+        ON asc_data.Ticker = dtkl.Ticker
 ),
 
 ranked_combined_data AS (
     SELECT
         *,
         DENSE_RANK() OVER (
-            PARTITION BY Ticker, DateDimKey, TimeDimKey, IntervalDimKey
+            PARTITION BY TickerDimKey, DateDimKey, TimeDimKey, IntervalDimKey
             ORDER BY FileTimestamp DESC
         ) as RecencyRank
     FROM
@@ -131,7 +141,7 @@ ranked_combined_data AS (
 )
 
 SELECT
-    Ticker,
+    TickerDimKey,
     IntervalDimKey,
     DateDimKey,
     TimeDimKey,

@@ -9,12 +9,8 @@ models:
       on_schema_change: "append_new_columns"
     constraints:
           - type: primary_key
-            columns: [Ticker, DateDimKey, TimeDimKey, IntervalDimKey, RecencyRank]
+            columns: [TickerDimKey, DateDimKey, TimeDimKey, IntervalDimKey, RecencyRank]
     columns:
-      - name: Ticker
-        data_type: STRING
-        constraints:
-          - type: not_null
       - name: Open
         data_type: FLOAT64
       - name: High
@@ -70,3 +66,10 @@ models:
           - type: foreign_key
             to: ref('dim__time')
             to_columns: [TimeDimKey]
+      - name: TickerDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__tickers')
+            to_columns: [TickerDimKey]
