@@ -6,67 +6,31 @@ import plotly.graph_objs as go
 import pandas as pd
 from datetime import datetime
 from google.cloud import bigquery
+from bq.bq import BQ_Client
 
 
 # Initialize BigQuery client
-project_id = "public-company-overview"
-client = bigquery.Client(project=project_id)
+bq = BQ_Client()
 
 
 # Get available tickers dynamically
 def get_available_tickers():
-    query = "SELECT DISTINCT Ticker FROM `public-company-overview.pco_dataset.fct__hist_ticker`"
-    df = client.query(query).to_dataframe()
-    return df['Ticker'].tolist()
+    return bq.get_available_tickers()
 
 
 # Get available data sources
 def get_available_data_sources():
-    query = "SELECT DISTINCT DataSource FROM `public-company-overview.pco_dataset.fct__hist_ticker`"
-    df = client.query(query).to_dataframe()
-    return df['DataSource'].dropna().tolist()
+    return bq.get_available_sources()
 
 
 # Function to get stock data from BigQuery
 def get_stock_data_from_bq(ticker, start_date, end_date, granularity):
-    start_str = start_date.strftime('%Y-%m-%d')
-    end_str = end_date.strftime('%Y-%m-%d')
-
-
-    base_unit = {
-        'H': 'hour',
-        'D': 'day',
-        'M': 'month',
-        'Y': 'year'
-    }.get(granularity, 'day')
-
-
-    query = f"""
-        SELECT
-            fct.Ticker,
-            PARSE_DATE('%Y%m%d', CAST(DateDimKey AS STRING)) AS date,
-            fct.Open, fct.High, fct.Low, fct.Close, fct.Volume,
-            fct.FileTimestamp, fct.DBTLoadedAtStaging,
-            fct.DataSource,
-            dim.BaseUnit,
-            dim.IntervalValue,
-            dim.IntervalDescription
-        FROM `public-company-overview.pco_dataset.fct__hist_ticker` fct
-        FULL JOIN `public-company-overview.pco_dataset.dim__interval` dim
-            ON fct.IntervalDimKey = dim.IntervalDimKey
-        WHERE fct.Ticker = '{ticker}'
-            AND PARSE_DATE('%Y%m%d', CAST(DateDimKey AS STRING)) BETWEEN '{start_str}' AND '{end_str}'
-            AND dim.BaseUnit = '{base_unit}'
-        ORDER BY date
-    """
-    df = client.query(query).to_dataframe()
-    return df
+    return bq.get_single_stock(ticker, start_date, end_date, granularity)
 
 
 # Create Dash app
 def create_dash_app(server: Flask) -> dash.Dash:
     dash_app = dash.Dash(__name__, server=server, url_base_pathname='/')
-
 
     # Load available tickers and data sources
     tickers = get_available_tickers()
@@ -249,6 +213,3 @@ if __name__ == '__main__':
     server = Flask(__name__)
     app = create_dash_app(server)
     server.run(debug=True, host='0.0.0.0', port=8050)
-
-
-
