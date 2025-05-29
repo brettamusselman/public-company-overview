@@ -6,15 +6,25 @@ from typing import List
 import io
 import logging
 
+#rate limiting/retry logic
+from ratelimit import limits, sleep_and_retry
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+import time
+
+CALLS_PER_MINUTE = 5 #free tier
+ONE_MINUTE = 60
+
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 """
 Notes:
 - Don't use the official Polygon.io documentation (for some reason), use pip polygon docs and maybe github
+- I believe this is because the I installed the unofficial wrapper around Polygon instead of the official library
 
 Next Steps:
-- 
+- Rate limiting
+- Any more functions for different types of data
 """
 
 class Polygon_Wrapper:
@@ -26,6 +36,24 @@ class Polygon_Wrapper:
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
+
+    @staticmethod
+    @sleep_and_retry
+    @limits(calls=CALLS_PER_MINUTE, period=ONE_MINUTE)
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(5),
+        retry=retry_if_exception_type((Exception,))
+    )
+    def _api_call(func, *args, **kwargs):
+        """
+        Safely calls an API function with rate limiting and retry.
+        """
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f"Retrying after exception in API call: {e}")
+            raise
 
     def get_tickers(self, limit=1000, exchange="") -> pd.DataFrame:
         """
@@ -48,7 +76,7 @@ class Polygon_Wrapper:
             all_tickers = []
             
             # Get first page of results
-            response = self.ref_client.get_tickers(limit=limit, exchange="")
+            response = self._api_call(self.ref_client.get_tickers, limit=limit, exchange=exchange)
             if not response or "results" not in response:
                 logger.warning("No results found in the initial tickers response")
                 return pd.DataFrame()
@@ -62,7 +90,7 @@ class Polygon_Wrapper:
                 try:
                     page_count += 1
                     logger.debug(f"Fetching page {page_count} of tickers")
-                    response = self.ref_client.get_next_page(response)
+                    response = self._api_call(self.ref_client.get_next_page, response)
                     if response and "results" in response:
                         all_tickers.extend(response.get("results", []))
                         logger.debug(f"Added {len(response.get('results', []))} tickers from page {page_count}")
@@ -93,7 +121,7 @@ class Polygon_Wrapper:
         """
         try:
             logger.info("Starting to fetch exchanges from Polygon.io")
-            response = self.ref_client.get_exchanges()
+            response = self._api_call(self.ref_client.get_exchanges)
             if not response or "results" not in response:
                 logger.warning("No results found in the exchanges response")
                 return pd.DataFrame()
@@ -126,7 +154,7 @@ class Polygon_Wrapper:
             all_tickers = []
             
             # Get first page of results
-            response = self.ref_client.get_tickers(date=date, limit=limit, exchange=exchange)
+            response = self._api_call(self.ref_client.get_tickers_on_date, date=date, limit=limit, exchange=exchange)
             if not response or "results" not in response:
                 logger.warning("No results found in the initial tickers on date response")
                 return pd.DataFrame()
@@ -140,7 +168,7 @@ class Polygon_Wrapper:
                 try:
                     page_count += 1
                     logger.debug(f"Fetching page {page_count} of tickers on date {date}")
-                    response = self.ref_client.get_next_page(response)
+                    response = self._api_call(self.ref_client.get_next_page, response)
                     if response and "results" in response:
                         all_tickers.extend(response.get("results", []))
                         logger.debug(f"Added {len(response.get('results', []))} tickers from page {page_count}")
@@ -191,58 +219,28 @@ class Polygon_Wrapper:
             # Convert adjusted string to boolean
             adjusted_bool = adjusted.lower() == "true" if isinstance(adjusted, str) else adjusted
             
-            # Get aggregate bars
-            aggs = self.rest_client.get_aggregate_bars(
-                symbol=ticker,
-                from_date=start,
-                to_date=end,
-                adjusted=adjusted_bool,
-                sort=sort,
-                limit=limit,
-                multiplier=multiplier,
-                timespan=timespan,
-                full_range=full_range,
-                run_parallel=run_parallel,
-                max_concurrent_workers=max_concurrent_workers
-            )
+            aggs = self._api_call(self.rest_client.get_aggregate_bars, symbol=ticker,
+                                    from_date=start, to_date=end, adjusted=adjusted_bool,
+                                    sort=sort, limit=limit, multiplier=multiplier,
+                                    timespan=timespan, full_range=full_range,
+                                    run_parallel=run_parallel, max_concurrent_workers=max_concurrent_workers)
             
             logger.info(f"Fetched historical data for {ticker} from {start} to {end}")
-            return pd.DataFrame(aggs)
+            df = pd.DataFrame(aggs)
+            rename_dict = {
+                            'v': 'Volume',
+                            'vw': 'Vwap',  # volume-weighted average price
+                            'o': 'Open',
+                            'c': 'Close',
+                            'h': 'High',
+                            'l': 'Low',
+                            't': 'Timestamp',
+                            'n': 'Num_Transactions'
+                        }
+            df.rename(columns=rename_dict, inplace=True)
+            df['Datetime'] = pd.to_datetime(df['Timestamp'], unit='ms')
+            return df
+
         except Exception as e:
             logger.error(f"Exception occurred while fetching historical data: {str(e)}")
-            raise
-
-    def get_news(self, ticker: str) -> pd.DataFrame:
-        """Fetches news articles for a given ticker.
-        Args:
-            ticker (str): The stock ticker symbol.
-        Returns:
-            pd.DataFrame: The news articles as a DataFrame.
-        """
-        try:
-            # Get news articles
-            news = self.ref_client.get_ticker_news(ticker=ticker)
-            
-            logger.info(f"Fetched news for {ticker}")
-            return pd.DataFrame(news)
-        except Exception as e:
-            logger.error(f"Exception occurred while fetching news: {str(e)}")
-            raise
-
-    def get_news_on_date(self, ticker: str, date: str) -> pd.DataFrame:
-        """Fetches news articles for a given ticker on a specific date.
-        Args:
-            ticker (str): The stock ticker symbol.
-            date (str): The date to filter news articles by (YYYY-MM-DD).
-        Returns:
-            pd.DataFrame: The news articles as a DataFrame.
-        """
-        try:
-            # Get news articles on date
-            news = self.ref_client.get_ticker_news(ticker=ticker, date=date)
-            
-            logger.info(f"Fetched news for {ticker} on date {date}")
-            return pd.DataFrame(news)
-        except Exception as e:
-            logger.error(f"Exception occurred while fetching news on date: {str(e)}")
             raise

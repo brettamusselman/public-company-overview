@@ -1,0 +1,15 @@
+runtime: custom
+env: flex
+entrypoint: gunicorn -b :$PORT app:server
+
+env_variables:
+  GOOGLE_CLOUD_PROJECT: "public-company-overview"
+
+resources:
+  cpu: 1
+  memory_gb: 1
+  disk_size_gb: 10
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 2
