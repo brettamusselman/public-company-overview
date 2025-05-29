@@ -153,5 +153,5 @@ class BQ_Client:
             end_date=end_str,
             base_unit=base_unit
         )
-
+;s
         return self.get_dataframe(query, use_polars=use_polars)
