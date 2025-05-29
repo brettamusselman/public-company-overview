@@ -1,22 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Public Company Overview</title>
+  <meta charset="UTF-8">
+  <title>Public Company Overview</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #212529;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+
+    nav.custom-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin: 1.5rem 0 1rem 0;
+      text-align: center;
+      color: #343a40;
+    }
+
+    p {
+      font-size: 1.1rem;
+      text-align: center;
+      color: #6c757d;
+    }
+
+    iframe {
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      background-color: #fff;
+      display: block;
+      margin: 0 auto 2rem auto; /* center and add bottom margin */
+      width: 100%;
+      max-width: 1200px; /* prevent too wide on very large screens */
+    }
+
+    /* Only for homepage container */
+    .container {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    a, iframe {
+      transition: all 0.3s ease-in-out;
+    }
+  </style>
 </head>
 <body>
-    <nav style="margin-bottom: 20px;">
-        <a href="/">Home</a> |
-        <a href="/dashboard">Dashboard</a> |
-        <a href="/request">Trigger Workflow</a>
-    </nav>
+  <nav class="custom-navbar">
+    <a href="/">Home</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/request">Trigger Workflow</a>
+  </nav>
 
-    {% if route == 'dashboard' %}
-        <iframe src="/dash/" width="100%" height="800" style="border:none;"></iframe>
-    {% elif route == 'request' %}
-        <iframe src="/request/" width="100%" height="600" style="border:none;"></iframe>
-    {% else %}
-        <h1>Welcome</h1>
-        <p>Select a page from the navigation above.</p>
-    {% endif %}
+  {% if route == 'dashboard' %}
+    <h1>📊 Ticker Overview Dashboard</h1>
+    <iframe src="/dash/" height="800"></iframe>
+  {% elif route == 'request' %}
+    <h1>🚀 Trigger Standard Workflow</h1>
+    <iframe src="/request/" height="600"></iframe>
+  {% else %}
+    <div class="container">
+      <h1>Welcome</h1>
+      <p>Select a page from the navigation above.</p>
+    </div>
+  {% endif %}
 </body>
 </html>
