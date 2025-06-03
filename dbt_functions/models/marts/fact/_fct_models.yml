@@ -1,0 +1,333 @@
+version: 2
+
+models:
+  - name: fct__hist_ticker
+    description: "Fact model for historical stock tickers"
+    config:
+      contract:
+        enforced: true
+      on_schema_change: "append_new_columns"
+    constraints:
+          - type: primary_key
+            columns: [TickerDimKey, DateDimKey, TimeDimKey, IntervalDimKey, RecencyRank]
+    columns:
+      - name: Open
+        data_type: FLOAT64
+      - name: High
+        data_type: FLOAT64
+      - name: Low
+        data_type: FLOAT64
+      - name: Close
+        data_type: FLOAT64
+      - name: Volume
+        data_type: INT64
+      - name: Vwap
+        data_type: FLOAT64
+      - name: Change
+        data_type: FLOAT64
+      - name: ChangePercent
+        data_type: FLOAT64
+      - name: NumTransactions
+        data_type: INT64
+      - name: Dividends
+        data_type: FLOAT64
+      - name: StockSplits
+        data_type: FLOAT64
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: RecencyRank
+        data_type: INT64
+      - name: IntervalDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__interval')
+            to_columns: [IntervalDimKey]
+      - name: DataSource
+        data_type: STRING
+      - name: DateDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__date')
+            to_columns: [DateDimKey]
+      - name: TimeDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__time')
+            to_columns: [TimeDimKey]
+      - name: TickerDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__tickers')
+            to_columns: [TickerDimKey]
+  - name: fct__balance_sheet
+    config:
+      contract:
+        enforced: true
+      on_schema_change: "append_new_columns"
+
+    constraints:
+      - type: primary_key
+        columns: [TickerDimKey, DateDimKey, Period, RecencyRank]
+
+    columns:
+      - name: TickerDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__tickers')
+            to_columns: [TickerDimKey]
+
+      - name: DateDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__date')
+            to_columns: [DateDimKey]
+
+      - name: Period
+        data_type: STRING           
+        constraints:
+          - type: not_null
+
+      - name: CalendarYear
+        data_type: INT64
+
+      - name: RecencyRank
+        data_type: INT64
+
+      - name: CashAndCashEquivalents
+        data_type: INT64
+      - name: ShortTermInvestments
+        data_type: INT64
+      - name: CashAndShortTermInvestments
+        data_type: INT64
+      - name: NetReceivables
+        data_type: INT64
+      - name: Inventory
+        data_type: INT64
+      - name: OtherCurrentAssets
+        data_type: INT64
+      - name: TotalCurrentAssets
+        data_type: INT64
+
+      - name: PPENet
+        data_type: INT64
+      - name: Goodwill
+        data_type: INT64
+      - name: IntangibleAssets
+        data_type: INT64
+      - name: GoodwillAndIntangibleAssets
+        data_type: INT64
+      - name: LongTermInvestments
+        data_type: INT64
+      - name: TaxAssets
+        data_type: INT64
+      - name: OtherNonCurrentAssets
+        data_type: INT64
+      - name: TotalNonCurrentAssets
+        data_type: INT64
+      - name: OtherAssets
+        data_type: INT64
+      - name: TotalAssets
+        data_type: INT64
+
+      - name: AccountPayables
+        data_type: INT64
+      - name: ShortTermDebt
+        data_type: INT64
+      - name: TaxPayables
+        data_type: INT64
+      - name: DeferredRevenue
+        data_type: INT64
+      - name: OtherCurrentLiabilities
+        data_type: INT64
+      - name: TotalCurrentLiabilities
+        data_type: INT64
+      - name: LongTermDebt
+        data_type: INT64
+      - name: DeferredRevenueNonCurrent
+        data_type: INT64
+      - name: DeferredTaxLiabilitiesNonCurrent
+        data_type: INT64
+      - name: OtherNonCurrentLiabilities
+        data_type: INT64
+      - name: TotalNonCurrentLiabilities
+        data_type: INT64
+      - name: OtherLiabilities
+        data_type: INT64
+      - name: CapitalLeaseObligations
+        data_type: INT64
+      - name: TotalLiabilities
+        data_type: INT64
+
+      - name: PreferredStock
+        data_type: INT64
+      - name: CommonStock
+        data_type: INT64
+      - name: RetainedEarnings
+        data_type: INT64
+      - name: AOCI
+        data_type: INT64
+      - name: OtherSHEquity
+        data_type: INT64
+      - name: TotalStockholdersEquity
+        data_type: INT64
+      - name: TotalEquity
+        data_type: INT64
+
+      - name: TotalLiabilitiesAndStockholdersEquity
+        data_type: INT64
+      - name: MinorityInterest
+        data_type: INT64
+      - name: TotalLiabilitiesAndTotalEquity
+        data_type: INT64
+      - name: TotalInvestments
+        data_type: INT64
+      - name: TotalDebt
+        data_type: INT64
+      - name: NetDebt
+        data_type: INT64
+
+      - name: FilingIndexLink
+        data_type: STRING
+      - name: FilingDocumentLink
+        data_type: STRING
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DataSource
+        data_type: STRING
+  - name: fct__income_statement
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [TickerDimKey, DateDimKey, Period, RecencyRank]
+
+    columns:
+      - name: TickerDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__tickers')
+            to_columns: [TickerDimKey]
+
+      - name: DateDimKey
+        data_type: INT64
+        constraints:
+          - type: not_null
+          - type: foreign_key
+            to: ref('dim__date')
+            to_columns: [DateDimKey]
+
+      - name: Period
+        data_type: STRING
+        constraints:
+          - type: not_null
+
+      - name: CalendarYear
+        data_type: INT64
+
+      - name: RecencyRank
+        data_type: INT64
+
+      - name: Revenue
+        data_type: INT64
+      - name: CostOfRevenue
+        data_type: INT64
+      - name: GrossProfit
+        data_type: INT64
+      - name: GrossProfitRatio
+        data_type: FLOAT64
+
+      - name: RnDExpenses
+        data_type: INT64
+      - name: GAndAExpenses
+        data_type: INT64
+      - name: SellingAndMarketingExpenses
+        data_type: INT64
+      - name: SGnAExpenses
+        data_type: INT64
+      - name: OtherExpenses
+        data_type: INT64
+      - name: OperatingExpenses
+        data_type: INT64
+      - name: CostAndExpenses
+        data_type: INT64
+
+      - name: InterestIncome
+        data_type: INT64
+      - name: InterestExpense
+        data_type: INT64
+      - name: DepreciationAndAmortization
+        data_type: INT64
+
+      - name: EBITDA
+        data_type: INT64
+      - name: EBITDARatio
+        data_type: FLOAT64
+      - name: OperatingIncome
+        data_type: INT64
+      - name: OperatingIncomeRatio
+        data_type: FLOAT64
+      - name: TotalOtherIncomeExpensesNet
+        data_type: INT64
+      - name: IncomeBeforeTax
+        data_type: INT64
+      - name: IncomeBeforeTaxRatio
+        data_type: FLOAT64
+      - name: IncomeTaxExpense
+        data_type: INT64
+      - name: NetIncome
+        data_type: INT64
+      - name: NetIncomeRatio
+        data_type: FLOAT64
+
+      - name: EPS
+        data_type: FLOAT64
+      - name: EPSDiluted
+        data_type: FLOAT64
+      - name: WeightedAverageShares
+        data_type: INT64
+      - name: WeightedAverageSharesDiluted
+        data_type: INT64
+
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: FilingIndexLink
+        data_type: STRING
+      - name: FilingDocumentLink
+        data_type: STRING
+      - name: DataSource
+        data_type: STRING

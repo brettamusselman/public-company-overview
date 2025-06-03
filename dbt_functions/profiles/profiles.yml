@@ -1,0 +1,21 @@
+public_company_overview:
+  target: dev
+  outputs:
+    dev:
+      dataset: pco_dataset
+      job_execution_timeout_seconds: 300
+      job_retries: 1
+      method: oauth
+      priority: interactive
+      project: public-company-overview
+      threads: 1
+      type: bigquery
+    prod:
+      type: bigquery
+      method: oauth
+      project: public-company-overview
+      dataset: pco_dataset
+      threads: 4
+      priority: batch
+      job_execution_timeout_seconds: 900
+      job_retries: 3

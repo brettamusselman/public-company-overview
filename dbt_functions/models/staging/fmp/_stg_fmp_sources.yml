@@ -1,0 +1,267 @@
+# requires you install external tables plugin with 'dbt deps'
+# then to stage external tables, run 'dbt run-operation stage_external_sources'
+version: 2
+
+sources:
+  - name: fmp_external_source # This is the source name you'll use in ref() or source()
+    database: public-company-overview
+    schema: pco_dataset
+    loader: gcloud storage
+    tables:
+      - name: stg_fmp__hist_ticker_daily # Name of the BQ external table
+        description: "External table for FMP hist ticker CSV files from GCS."
+        external:
+          location: "gs://dbt-testing/fmp/hist_ticker/daily/*.csv" # Path to your CSV files
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns: #External read as string, then reformat in further staging step
+          - name: symbol
+            data_type: STRING
+          - name: date
+            data_type: STRING
+          - name: open
+            data_type: STRING
+          - name: high
+            data_type: STRING
+          - name: low
+            data_type: STRING
+          - name: close
+            data_type: STRING
+          - name: volume
+            data_type: STRING
+          - name: change
+            data_type: STRING
+          - name: changePercent
+            data_type: STRING
+          - name: vwap
+            data_type: STRING
+      - name: stg_fmp__tickers_ext 
+        external:
+          location: "gs://dbt-testing/fmp/tickers/*.csv" 
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+            allow_quoted_newlines: true
+        columns:
+          - name: symbol
+            data_type: STRING
+          - name: name
+            data_type: STRING
+          - name: price
+            data_type: STRING
+          - name: exchange
+            data_type: STRING
+          - name: exchangeShortName
+            data_type: STRING
+          - name: type
+            data_type: STRING
+      - name: stg_fmp__exchanges_ext 
+        external:
+          location: "gs://dbt-testing/fmp/exchanges/*.csv" 
+          options:
+            format: csv 
+            skip_leading_rows: 1 
+        columns:
+          - name: exchange
+            data_type: STRING
+      - name: stg_fmp__balance_sheet_ext        
+        external:
+          location: "gs://dbt-testing/fmp/balance_sheet/*.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: date
+            data_type: STRING
+          - name: symbol
+            data_type: STRING
+          - name: reportedCurrency
+            data_type: STRING
+          - name: cik
+            data_type: STRING
+          - name: fillingDate
+            data_type: STRING
+          - name: acceptedDate
+            data_type: STRING
+          - name: calendarYear
+            data_type: STRING
+          - name: period
+            data_type: STRING
+          - name: cashAndCashEquivalents
+            data_type: STRING
+          - name: shortTermInvestments
+            data_type: STRING
+          - name: cashAndShortTermInvestments
+            data_type: STRING
+          - name: netReceivables
+            data_type: STRING
+          - name: inventory
+            data_type: STRING
+          - name: otherCurrentAssets
+            data_type: STRING
+          - name: totalCurrentAssets
+            data_type: STRING
+          - name: propertyPlantEquipmentNet
+            data_type: STRING
+          - name: goodwill
+            data_type: STRING
+          - name: intangibleAssets
+            data_type: STRING
+          - name: goodwillAndIntangibleAssets
+            data_type: STRING
+          - name: longTermInvestments
+            data_type: STRING
+          - name: taxAssets
+            data_type: STRING
+          - name: otherNonCurrentAssets
+            data_type: STRING
+          - name: totalNonCurrentAssets
+            data_type: STRING
+          - name: otherAssets
+            data_type: STRING
+          - name: totalAssets
+            data_type: STRING
+          - name: accountPayables
+            data_type: STRING
+          - name: shortTermDebt
+            data_type: STRING
+          - name: taxPayables
+            data_type: STRING
+          - name: deferredRevenue
+            data_type: STRING
+          - name: otherCurrentLiabilities
+            data_type: STRING
+          - name: totalCurrentLiabilities
+            data_type: STRING
+          - name: longTermDebt
+            data_type: STRING
+          - name: deferredRevenueNonCurrent
+            data_type: STRING
+          - name: deferredTaxLiabilitiesNonCurrent
+            data_type: STRING
+          - name: otherNonCurrentLiabilities
+            data_type: STRING
+          - name: totalNonCurrentLiabilities
+            data_type: STRING
+          - name: otherLiabilities
+            data_type: STRING
+          - name: capitalLeaseObligations
+            data_type: STRING
+          - name: totalLiabilities
+            data_type: STRING
+          - name: preferredStock
+            data_type: STRING
+          - name: commonStock
+            data_type: STRING
+          - name: retainedEarnings
+            data_type: STRING
+          - name: accumulatedOtherComprehensiveIncomeLoss
+            data_type: STRING
+          - name: othertotalStockholdersEquity
+            data_type: STRING
+          - name: totalStockholdersEquity
+            data_type: STRING
+          - name: totalEquity
+            data_type: STRING
+          - name: totalLiabilitiesAndStockholdersEquity
+            data_type: STRING
+          - name: minorityInterest
+            data_type: STRING
+          - name: totalLiabilitiesAndTotalEquity
+            data_type: STRING
+          - name: totalInvestments
+            data_type: STRING
+          - name: totalDebt
+            data_type: STRING
+          - name: netDebt
+            data_type: STRING
+          - name: link
+            data_type: STRING
+          - name: finalLink
+            data_type: STRING
+      - name: stg_fmp__income_statement_ext
+        external:
+          location: "gs://dbt-testing/fmp/income_statement/*.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+
+        columns:
+          - name: date
+            data_type: STRING
+          - name: symbol
+            data_type: STRING
+          - name: reportedCurrency
+            data_type: STRING
+          - name: cik
+            data_type: STRING
+          - name: fillingDate
+            data_type: STRING
+          - name: acceptedDate
+            data_type: STRING
+          - name: calendarYear
+            data_type: STRING
+          - name: period
+            data_type: STRING
+          - name: revenue
+            data_type: STRING
+          - name: costOfRevenue
+            data_type: STRING
+          - name: grossProfit
+            data_type: STRING
+          - name: grossProfitRatio
+            data_type: STRING
+          - name: researchAndDevelopmentExpenses
+            data_type: STRING
+          - name: generalAndAdministrativeExpenses
+            data_type: STRING
+          - name: sellingAndMarketingExpenses
+            data_type: STRING
+          - name: sellingGeneralAndAdministrativeExpenses
+            data_type: STRING
+          - name: otherExpenses
+            data_type: STRING
+          - name: operatingExpenses
+            data_type: STRING
+          - name: costAndExpenses
+            data_type: STRING
+          - name: interestIncome
+            data_type: STRING
+          - name: interestExpense
+            data_type: STRING
+          - name: depreciationAndAmortization
+            data_type: STRING
+          - name: ebitda
+            data_type: STRING
+          - name: ebitdaratio
+            data_type: STRING
+          - name: operatingIncome
+            data_type: STRING
+          - name: operatingIncomeRatio
+            data_type: STRING
+          - name: totalOtherIncomeExpensesNet
+            data_type: STRING
+          - name: incomeBeforeTax
+            data_type: STRING
+          - name: incomeBeforeTaxRatio
+            data_type: STRING
+          - name: incomeTaxExpense
+            data_type: STRING
+          - name: netIncome
+            data_type: STRING
+          - name: netIncomeRatio
+            data_type: STRING
+          - name: eps
+            data_type: STRING
+          - name: epsdiluted
+            data_type: STRING
+          - name: weightedAverageShsOut
+            data_type: STRING
+          - name: weightedAverageShsOutDil
+            data_type: STRING
+          - name: link
+            data_type: STRING
+          - name: finalLink
+            data_type: STRING
+
