@@ -39,19 +39,31 @@ async def run_job(arg_list: ArgList):
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
 
         logger.info("Job executed successfully")
+        log_output = None
+        if logger.handlers:
+            handler = logger.handlers[0]
+            if hasattr(handler.stream, "getvalue"):
+                log_output = handler.stream.getvalue()
 
         return {
             "status": "success",
             "stdout": result.stdout.strip(),
             "stderr": result.stderr.strip(),
+            "logging": log_output,
         }
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Command failed: {e.stderr}")
+        log_output = None
+        if logger.handlers:
+            handler = logger.handlers[0]
+            if hasattr(handler.stream, "getvalue"):
+                log_output = handler.stream.getvalue()
         raise HTTPException(status_code=500, detail={
             "error": "Command execution failed",
             "stdout": e.stdout.strip(),
             "stderr": e.stderr.strip(),
+            "logging": log_output,
         })
 
     except Exception as e:
@@ -64,21 +76,48 @@ async def daily_update():
         MAIN_PATH = os.path.join(os.path.dirname(__file__), "main.py")
         cmd = ["python", MAIN_PATH, "--daily-update"]
         logger.info(f"Executing daily update command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)
         logger.info("Daily update executed successfully")
+
+        if result.returncode != 0:
+            logger.error(f"Daily update command failed: {result.stderr}")
+            log_output = None
+            if logger.handlers:
+                handler = logger.handlers[0]
+                if hasattr(handler.stream, "getvalue"):
+                    log_output = handler.stream.getvalue()
+            raise HTTPException(status_code=500, detail={
+                "error": "Daily update execution failed",
+                "stdout": result.stdout.strip(),
+                "stderr": result.stderr.strip(),
+                "logging": log_output,
+            })
+        
+        log_output = None
+        if logger.handlers:
+            handler = logger.handlers[0]
+            if hasattr(handler.stream, "getvalue"):
+                log_output = handler.stream.getvalue()
 
         return {
             "status": "success",
             "stdout": result.stdout.strip(),
             "stderr": result.stderr.strip(),
+            "loggging": log_output,
         }
     
     except subprocess.CalledProcessError as e:
         logger.error(f"Daily update command failed: {e.stderr}")
+        log_output = None
+        if logger.handlers:
+            handler = logger.handlers[0]
+            if hasattr(handler.stream, "getvalue"):
+                log_output = handler.stream.getvalue()
         raise HTTPException(status_code=500, detail={
             "error": "Daily update execution failed",
             "stdout": e.stdout.strip(),
             "stderr": e.stderr.strip(),
+            "logging": log_output,
         })
     
     except Exception as e:
@@ -101,18 +140,32 @@ async def standard_workflow(arg_list: ArgList):
 
         logger.info("Standard workflow executed successfully")
 
+        log_output = None
+        if logger.handlers:
+            handler = logger.handlers[0]
+            if hasattr(handler.stream, "getvalue"):
+                log_output = handler.stream.getvalue()
+
+
         return {
             "status": "success",
             "stdout": result.stdout.strip(),
             "stderr": result.stderr.strip(),
+            "logging": log_output,
         }
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Command failed: {e.stderr}")
+        log_output = None
+        if logger.handlers:
+            handler = logger.handlers[0]
+            if hasattr(handler.stream, "getvalue"):
+                log_output = handler.stream.getvalue()
         raise HTTPException(status_code=500, detail={
             "error": "Command execution failed",
             "stdout": e.stdout.strip(),
             "stderr": e.stderr.strip(),
+            "logging": log_output,
         })
 
     except Exception as e:
