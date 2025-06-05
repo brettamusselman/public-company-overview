@@ -21,16 +21,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 #custom clients around APIs/SDKs
-from src.clients.yfinance.yfinance import YF_Client
-from src.clients.fmp.fmp import FMP_Client
-from src.clients.microlink.microlink import Microlink_Client
-from src.clients.shodan.shodan import Shodan_Client #might not use this
-from src.clients.polygon.polygon import Polygon_Wrapper
+from clients.yfinance.yfinance import YF_Client
+from clients.fmp.fmp import FMP_Client
+from clients.microlink.microlink import Microlink_Client
+#from clients.shodan.shodan import Shodan_Client #might not use this
+from clients.polygon.polygon import Polygon_Wrapper
 
 #wrappers around GCP clients
-from src.clients.storage.storage import GCS_Client_Wrapper
-from src.clients.secrets.secrets import Secret_Manager
-from src.clients.bq.bq import BQ_Client #might not use this
+from clients.storage.storage import GCS_Client_Wrapper
+from clients.secrets.secrets import Secret_Manager
+#from clients.bq.bq import BQ_Client #might not use this
 
 #define functions
 def _write_base(client_func, file_path_func, *args, content_type='text/csv', **kwargs):
@@ -290,6 +290,7 @@ def write_tickers():
     This function should be the main dimension table for "tickers" representing different public companies.
     """
     write_tickers_fmp()
+    write_tickers_w_financials_fmp()
     write_tickers_polygon()
 
 def write_exchanges():
@@ -326,14 +327,56 @@ def write_facts(list_of_tickers: list):
     for ticker in list_of_tickers:
         write_hist_ticker_yf(ticker, "2y", "1d")
         write_hist_ticker_polygon(ticker, start_date, yesterday, timespan="day", multiplier=1, adjusted="true")
-
+        write_hist_ticker_fmp(ticker, start_date, yesterday)
+        write_hist_ticker_interval_fmp(ticker, "4hour", start_date, yesterday)
+        write_hist_ticker_interval_fmp(ticker, "1hour", start_date, yesterday)
+        write_hist_ticker_interval_fmp(ticker, "30min", start_date, yesterday)
+        write_hist_ticker_interval_fmp(ticker, "15min", start_date, yesterday)
+        write_hist_ticker_interval_fmp(ticker, "5min", start_date, yesterday)
+        write_hist_ticker_interval_fmp(ticker, "1min", start_date, yesterday)
+        write_balance_sheet_fmp(ticker)
+        write_income_statement_fmp(ticker)
+        write_cash_flow_fmp(ticker)
+        write_stock_peers_fmp(ticker)
+        write_stock_news_fmp(ticker)
+        write_company_profile_fmp(ticker)
+        write_company_notes_fmp(ticker)
+        write_employee_count_fmp(ticker)
+        write_key_executives_fmp(ticker) #this is actually a dimension table but you need a ticker so we run it in facts
+        write_exec_comp_fmp(ticker)
         pass
 
-def standard_workflow():
+def standard_workflow(ticker: str):
     """
     This function should represent a standard workflow where a ticker is entered and a bunh of data is pulled.
     """
-    pass
+    #grab daily ticker history for the last 2 years
+    write_hist_ticker_yf(ticker, "2y", "1d")
+    write_hist_ticker_polygon(ticker, "2y", "1d", timespan="day", multiplier=1, adjusted="true")
+    yesterday = pd.Timestamp.now() - pd.Timedelta(days=1)
+    yesterday = yesterday.strftime("%Y-%m-%d")
+    start_date = pd.Timestamp.now() - pd.Timedelta(days=1800) #change this since Starter tier gets up to 5 years of historical data
+    start_date = start_date.strftime("%Y-%m-%d")
+    write_hist_ticker_fmp(ticker, start_date, yesterday)
+
+    #get key executives, exec comp, company profile, company notes etc.
+    write_key_executives_fmp(ticker)
+    write_exec_comp_fmp(ticker)
+    write_company_profile_fmp(ticker)
+    write_company_notes_fmp(ticker)
+    write_employee_count_fmp(ticker)
+    write_stock_peers_fmp(ticker)
+    write_stock_news_fmp(ticker)
+    write_income_statement_fmp(ticker)
+    write_balance_sheet_fmp(ticker)
+    write_cash_flow_fmp(ticker)
+    
+    #add this later but get url and get pdf and text from microlink
+    yf_client = YF_Client()
+    ticker_info = yf_client.get_ticker_info(ticker)
+    url = ticker_info.get('website')
+    write_microlink_pdf(url)
+    write_microlink_text(url)
 
 def daily_hist_ticker():
     """
@@ -350,9 +393,13 @@ def daily_update():
     write_dimensions()
 
     #add list of tickers to pull and their respective fact table functions below
-    list_of_tickers=["MSFT", "AAPL", "GOOGL"]
+    sp500 = pd.read_excel('sp500.xlsx')
+    list_of_tickers = sp500['Ticker'].tolist()
+    list_of_tickers = list_of_tickers[:50]
+    list_of_tickers = [ticker.split('-')[0] for ticker in list_of_tickers]
     write_facts(list_of_tickers)
 
+#we could separate this into a different module and probably do the same with the write functions
 def cli_args() -> argparse.Namespace:
     """
     This function should handle command line arguments.
