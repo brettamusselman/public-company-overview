@@ -9,7 +9,9 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from datetime import datetime
 from google.cloud import bigquery
 from bq.bq import BQ_Client
+import io
 
+# BQ client
 bq = BQ_Client()
 
 def get_available_tickers():
@@ -106,12 +108,28 @@ def create_dash_app(server: Flask) -> dash.Dash:
                 dcc.Graph(id='moving-avg-chart'),
                 dcc.Graph(id='returns-histogram'),
                 dcc.Graph(id='forecast-graph'),
-                html.H3("🔍 Data Table Preview", className='text-center mt-3'),
+                html.Div(className='d-flex justify-content-between align-items-center mt-3', children=[
+                    html.H3("🔍 Data Table Preview", className='mb-0'),
+                    html.Div(className='d-flex align-items-center gap-2', children=[
+                        dcc.Dropdown(
+                            id="file-type-dropdown",
+                            options=[
+                                {"label": "CSV", "value": "csv"},
+                                {"label": "Excel", "value": "excel"},
+                            ],
+                            value="csv",
+                            style={'width': '150px'}
+                        ),
+                        html.Button("📥 Download Filtered File", id="download-btn", className="btn btn-success")
+                    ])
+                ]),
                 dash_table.DataTable(id='stock-table', page_size=10,
                     style_table={'overflowX': 'auto'},
                     style_cell={'textAlign': 'center', 'padding': '5px'},
                     style_header={'backgroundColor': 'lightgrey', 'fontWeight': 'bold'}
-                )
+                ),
+                dcc.Store(id='filtered-data-store'),
+                dcc.Download(id='download-dataframe-csv')
             ])
         ])
     ])
@@ -144,6 +162,7 @@ def create_dash_app(server: Flask) -> dash.Dash:
         Output('forecast-graph', 'figure'),
         Output('stock-table', 'data'),
         Output('stock-table', 'columns'),
+        Output('filtered-data-store', 'data'),
         Input('ticker-dropdown', 'value'),
         Input('date-picker', 'start_date'),
         Input('date-picker', 'end_date'),
@@ -158,12 +177,12 @@ def create_dash_app(server: Flask) -> dash.Dash:
     def update_chart_and_table(ticker, start_date, end_date, granularity, interval_value, data_source, y_axis_value, volume_norm_range, moving_avg_window, forecast_horizon):
         empty_fig = go.Figure(layout=go.Layout(title="No data"))
         if not ticker or not start_date or not end_date:
-            return empty_fig, empty_fig, empty_fig, empty_fig, [], []
+            return empty_fig, empty_fig, empty_fig, empty_fig, [], [], None
 
         start_date = pd.to_datetime(start_date, errors='coerce')
         end_date = pd.to_datetime(end_date, errors='coerce')
         if pd.isnull(start_date) or pd.isnull(end_date):
-            return empty_fig, empty_fig, empty_fig, empty_fig, [], []
+            return empty_fig, empty_fig, empty_fig, empty_fig, [], [], None
 
         df = get_stock_data_from_bq(ticker, start_date, end_date, granularity)
         if interval_value:
@@ -171,75 +190,87 @@ def create_dash_app(server: Flask) -> dash.Dash:
         if data_source:
             df = df[df['DataSource'] == data_source]
         if df.empty or y_axis_value not in df.columns:
-            return empty_fig, empty_fig, empty_fig, empty_fig, [], []
+            return empty_fig, empty_fig, empty_fig, empty_fig, [], [], None
 
         df['volume_norm'] = (df['Volume'] - df['Volume'].min()) / (df['Volume'].max() - df['Volume'].min() + 1e-9)
         df = df[(df['volume_norm'] >= volume_norm_range[0]) & (df['volume_norm'] <= volume_norm_range[1])]
         if df.empty:
-            return empty_fig, empty_fig, empty_fig, empty_fig, [], []
+            return empty_fig, empty_fig, empty_fig, empty_fig, [], [], None
 
-        x_range = [df['date'].min(), df['date'].max()]
-        fig_candle = go.Figure(data=[go.Candlestick(
-            x=df['date'], open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
-            increasing_line_color='green', decreasing_line_color='red'
-        )])
-        fig_candle.update_layout(title="Candlestick Chart", xaxis_title="Date", yaxis_title="Price",
-                                 xaxis=dict(range=x_range), height=500, xaxis_rangeslider_visible=False)
-
-        window = moving_avg_window if moving_avg_window else 30
-        df['moving_avg'] = df[y_axis_value].rolling(window=window).mean()
-        fig_moving_avg = go.Figure()
-        fig_moving_avg.add_trace(go.Scatter(x=df['date'], y=df[y_axis_value], mode='lines', name='Actual', line=dict(color='blue')))
-        if len(df) >= window:
-            fig_moving_avg.add_trace(go.Scatter(x=df['date'], y=df['moving_avg'], mode='lines', name=f'{window}-period MA', line=dict(color='orange', dash='dash')))
-        fig_moving_avg.update_layout(title="Moving Average", xaxis_title="Date", yaxis_title=y_axis_value)
-
+        df['moving_avg'] = df[y_axis_value].rolling(window=moving_avg_window or 30).mean()
         df['returns'] = df[y_axis_value].pct_change() * 100
-        fig_returns = go.Figure()
-        fig_returns.add_trace(go.Histogram(x=df['returns'].dropna(), nbinsx=50, marker_color='skyblue'))
-        fig_returns.update_layout(title="Returns Histogram", xaxis_title="Returns (%)", yaxis_title="Frequency")
 
-        # Linear regression forecast
-        X = np.arange(len(df)).reshape(-1, 1)
-        y_vals = df[y_axis_value].values
-        model = LinearRegression().fit(X, y_vals)
-        best_fit_line = model.predict(X)
+        fig_candle = go.Figure(data=[go.Candlestick(
+            x=df['date'], open=df['Open'], high=df['High'],
+            low=df['Low'], close=df['Close'],
+            increasing_line_color='green', decreasing_line_color='red')])
+        fig_candle.update_layout(title="Candlestick Chart", xaxis_rangeslider_visible=False)
 
-        forecast_horizon = forecast_horizon if forecast_horizon else 30
-        last_date = df['date'].iloc[-1]
-        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=forecast_horizon)
-        future_X = np.arange(len(df), len(df) + forecast_horizon).reshape(-1, 1)
-        future_forecast_lr = model.predict(future_X)
+        fig_moving_avg = go.Figure()
+        fig_moving_avg.add_trace(go.Scatter(x=df['date'], y=df[y_axis_value], mode='lines', name='Actual'))
+        fig_moving_avg.add_trace(go.Scatter(x=df['date'], y=df['moving_avg'], mode='lines', name='Moving Average', line=dict(dash='dash')))
+        fig_moving_avg.update_layout(title="Moving Average Chart", xaxis_rangeslider_visible=False)
 
-        # Holt’s Linear Trend forecast
-        holt_model = ExponentialSmoothing(df[y_axis_value], trend='add', seasonal=None).fit()
-        holt_fitted = holt_model.fittedvalues
-        future_forecast_holt = holt_model.forecast(forecast_horizon)
+        fig_returns = go.Figure(data=[go.Histogram(x=df['returns'].dropna(), nbinsx=50)])
+        fig_returns.update_layout(title="Daily Returns Histogram", xaxis_rangeslider_visible=False)
 
-        forecast_df = pd.DataFrame({'date': future_dates, 'forecast_lr': future_forecast_lr, 'forecast_holt': future_forecast_holt})
-        xaxis_range = [df['date'].min(), forecast_df['date'].max()]
+        model = LinearRegression().fit(np.arange(len(df)).reshape(-1, 1), df[y_axis_value].values)
+        best_fit_line = model.predict(np.arange(len(df)).reshape(-1, 1))
+        forecast_horizon = forecast_horizon or 30
+        future_dates = pd.date_range(start=df['date'].iloc[-1] + pd.Timedelta(days=1), periods=forecast_horizon)
+        forecast_lr = model.predict(np.arange(len(df), len(df) + forecast_horizon).reshape(-1, 1))
+        holt_model = ExponentialSmoothing(df[y_axis_value], trend='add').fit()
+        forecast_holt = holt_model.forecast(forecast_horizon)
 
         fig_forecast = go.Figure()
-        fig_forecast.add_trace(go.Scatter(x=df['date'], y=df[y_axis_value], mode='lines', name='Actual', line=dict(color='blue')))
-        fig_forecast.add_trace(go.Scatter(x=df['date'], y=best_fit_line, mode='lines', name='Trend (Linear)', line=dict(color='green', dash='solid')))
-        fig_forecast.add_trace(go.Scatter(x=df['date'], y=holt_fitted, mode='lines', name='Holt Fitted', line=dict(color='purple', dash='solid')))
-        fig_forecast.add_trace(go.Scatter(x=future_dates, y=future_forecast_lr, mode='lines', name='Forecast (Linear)', line=dict(color='green', dash='dash')))
-        fig_forecast.add_trace(go.Scatter(x=future_dates, y=future_forecast_holt, mode='lines', name='Forecast (Holt)', line=dict(color='purple', dash='dot')))
-        fig_forecast.update_layout(
-            title="Forecasts (Linear Regression & Holt)",
-            xaxis_title="Date",
-            yaxis_title=y_axis_value,
-            xaxis=dict(range=xaxis_range)
+        fig_forecast.add_trace(go.Scatter(x=df['date'], y=df[y_axis_value], name='Actual'))
+        fig_forecast.add_trace(go.Scatter(x=df['date'], y=best_fit_line, name='Linear Trend'))
+        fig_forecast.add_trace(go.Scatter(x=future_dates, y=forecast_lr, name='Linear Forecast', line=dict(dash='dash')))
+        fig_forecast.add_trace(go.Scatter(x=future_dates, y=forecast_holt, name='Holt Forecast', line=dict(dash='dot')))
+        fig_forecast.update_layout(title="Forecasting Graph", xaxis_rangeslider_visible=False)
+
+        return (
+            fig_candle,
+            fig_moving_avg,
+            fig_returns,
+            fig_forecast,
+            df.to_dict('records'),
+            [{"name": i, "id": i} for i in df.columns],
+            df.to_json(date_format='iso', orient='split')
         )
 
-        table_data = df.to_dict('records')
-        table_columns = [{"name": i, "id": i} for i in df.columns]
+    @dash_app.callback(
+        Output("download-dataframe-csv", "data"),
+        Input("download-btn", "n_clicks"),
+        State("filtered-data-store", "data"),
+        State("file-type-dropdown", "value"),
+        prevent_initial_call=True
+    )
+    def download_filtered_data(n_clicks, json_data, file_type):
+        if json_data is None:
+            return dash.no_update
+        df = pd.read_json(json_data, orient='split')
 
-        return fig_candle, fig_moving_avg, fig_returns, fig_forecast, table_data, table_columns
+        # Excel fix: remove timezone from datetime columns
+        for col in df.columns:
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                df[col] = df[col].dt.tz_localize(None)
+
+        if file_type == "excel":
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name='Data', index=False)
+            output.seek(0)
+            return dcc.send_bytes(output.read(), "filtered_stock_data.xlsx")
+        else:
+            return dcc.send_data_frame(df.to_csv, "filtered_stock_data.csv", index=False)
+
 
     return dash_app
 
+# Flask app
+server = Flask(__name__)
+
 if __name__ == '__main__':
-    server = Flask(__name__)
     app = create_dash_app(server)
     server.run(debug=True, host='0.0.0.0', port=8050)

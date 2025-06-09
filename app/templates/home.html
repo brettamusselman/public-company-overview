@@ -16,6 +16,11 @@
       position: sticky;
       top: 0;
       z-index: 1000;
+      background-color: #fff;
+      padding: 1rem;
+      display: flex;
+      gap: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     h1 {
@@ -37,12 +42,11 @@
       border-radius: 8px;
       background-color: #fff;
       display: block;
-      margin: 0 auto 2rem auto; /* center and add bottom margin */
+      margin: 0 auto 2rem auto;
       width: 100%;
-      max-width: 1200px; /* prevent too wide on very large screens */
+      max-width: 1200px;
     }
 
-    /* Only for homepage container */
     .container {
       padding: 2rem;
       max-width: 1200px;
@@ -59,14 +63,21 @@
     <a href="/">Home</a>
     <a href="/dashboard">Dashboard</a>
     <a href="/request">Trigger Workflow</a>
+    <a href="/download">Download File</a>
   </nav>
 
   {% if route == 'dashboard' %}
     <h1>📊 Ticker Overview Dashboard</h1>
     <iframe src="/dash/" height="800"></iframe>
+
   {% elif route == 'request' %}
     <h1>🚀 Trigger Standard Workflow</h1>
     <iframe src="/request/" height="600"></iframe>
+
+  {% elif route == 'download' %}
+    <h1>📥 Download Filtered Ticker Data</h1>
+    <iframe src="/download_dash/" height="800"></iframe>
+
   {% else %}
     <div class="container">
       <h1>Welcome</h1>

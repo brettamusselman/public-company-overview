@@ -13,7 +13,7 @@ SELECT
 FROM `public-company-overview.pco_dataset.fct__hist_ticker` fct
 FULL JOIN `public-company-overview.pco_dataset.dim__interval` dim
     ON fct.IntervalDimKey = dim.IntervalDimKey
-WHERE fct.TickerDimKey = '{ticker}'
+WHERE fct.Ticker = '{ticker}'
     AND PARSE_DATE('%Y%m%d', CAST(DateDimKey AS STRING)) BETWEEN '{start_date}' AND '{end_date}'
     AND dim.BaseUnit = '{base_unit}'
 ORDER BY date
