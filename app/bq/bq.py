@@ -40,7 +40,8 @@ class BQ_Client:
                 self.client = bigquery.Client(credentials=creds, project=project_id)
         except Exception as e:
             logger.error("Failed to initialize BigQuery client: %s", e)
-            raise RuntimeError(f"BigQuery client initialization failed: {e}")
+            # raise RuntimeError(f"BigQuery client initialization failed: {e}")
+            self.client = None
 
     def _get_table_ref(self, table_id: str):
         return self.client.dataset(self.dataset_id).table(table_id)

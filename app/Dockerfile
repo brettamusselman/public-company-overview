@@ -14,5 +14,6 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the app with Gunicorn
-CMD gunicorn -b :$PORT app:server
+# CMD gunicorn -b :$PORT app:server
+CMD ["gunicorn", "-b", ":8050", "app:server"]
 
