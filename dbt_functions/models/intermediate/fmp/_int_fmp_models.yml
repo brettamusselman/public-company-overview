@@ -351,3 +351,521 @@ models:
         data_type: TIMESTAMP
         constraints:
           - type: not_null
+  - name: int_fmp__cash_flow
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, ReportDate, Period, FileTimestamp]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: ReportDate
+        data_type: DATE
+        constraints:
+          - type: not_null
+      - name: Period
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: CalendarYear
+        data_type: INT64
+      - name: ReportedCurrency
+        data_type: STRING
+      - name: CIK
+        data_type: INT64
+
+      - name: NetIncome
+        data_type: INT64
+      - name: DepreciationAndAmortization
+        data_type: INT64
+      - name: DeferredIncomeTax
+        data_type: INT64
+      - name: StockBasedCompensation
+        data_type: INT64
+      - name: ChangeInWorkingCapital
+        data_type: INT64
+      - name: AccountsReceivables
+        data_type: INT64
+      - name: Inventory
+        data_type: INT64
+      - name: AccountsPayables
+        data_type: INT64
+      - name: OtherWorkingCapital
+        data_type: INT64
+      - name: OtherNonCashItems
+        data_type: INT64
+      - name: NetCashFromOperations
+        data_type: INT64
+
+      - name: CapexPPE
+        data_type: INT64
+      - name: AcquisitionsNet
+        data_type: INT64
+      - name: PurchasesOfInvestments
+        data_type: INT64
+      - name: SalesMaturitiesOfInvestments
+        data_type: INT64
+      - name: OtherInvestingActivities
+        data_type: INT64
+      - name: NetCashInvesting
+        data_type: INT64
+
+      - name: DebtRepayment
+        data_type: INT64
+      - name: CommonStockIssued
+        data_type: INT64
+      - name: CommonStockRepurchased
+        data_type: INT64
+      - name: DividendsPaid
+        data_type: INT64
+      - name: OtherFinancingActivities
+        data_type: INT64
+      - name: NetCashFinancing
+        data_type: INT64
+
+      - name: EffectOfForexChangesOnCash
+        data_type: INT64
+      - name: NetChangeInCash
+        data_type: INT64
+      - name: CashAtEndOfPeriod
+        data_type: INT64
+      - name: CashAtBeginningOfPeriod
+        data_type: INT64
+      - name: OperatingCashFlow
+        data_type: INT64
+      - name: CapitalExpenditure
+        data_type: INT64
+      - name: FreeCashFlow
+        data_type: INT64
+
+      - name: FilingIndexLink
+        data_type: STRING
+      - name: FilingDocumentLink
+        data_type: STRING
+
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__stock_peers
+    description: "Intermediate model for FMP stock-peer lists."
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, PeerTicker, FileTimestamp]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: PeerTicker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: PeerCompanyName
+        data_type: STRING
+      - name: PeerPrice
+        data_type: FLOAT64
+      - name: PeerMarketCap
+        data_type: INT64
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__stock_news
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, PublishedDateTime, ArticleURL, FileTimestamp]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: PublishedDateTime
+        data_type: DATETIME
+        constraints:
+          - type: not_null
+      - name: Publisher
+        data_type: STRING
+      - name: Title
+        data_type: STRING
+      - name: ImageURL
+        data_type: STRING
+      - name: Site
+        data_type: STRING
+      - name: ArticleText
+        data_type: STRING
+      - name: ArticleURL
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__company_profile
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: CompanyName
+        data_type: STRING
+      - name: Price
+        data_type: FLOAT64
+      - name: Beta
+        data_type: FLOAT64
+      - name: VolumeAvg
+        data_type: INT64
+      - name: MarketCap
+        data_type: INT64
+      - name: LastDividend
+        data_type: FLOAT64
+      - name: FiftyTwoWeekRange
+        data_type: STRING
+      - name: PriceChange
+        data_type: FLOAT64
+      - name: Currency
+        data_type: STRING
+      - name: CIK
+        data_type: INT64
+      - name: ISIN
+        data_type: STRING
+      - name: CUSIP
+        data_type: STRING
+      - name: Exchange
+        data_type: STRING
+      - name: ExchangeShortName
+        data_type: STRING
+      - name: Industry
+        data_type: STRING
+      - name: Website
+        data_type: STRING
+      - name: Description
+        data_type: STRING
+      - name: CEO
+        data_type: STRING
+      - name: Sector
+        data_type: STRING
+      - name: Country
+        data_type: STRING
+      - name: FullTimeEmployees
+        data_type: INT64
+      - name: Phone
+        data_type: STRING
+      - name: Address
+        data_type: STRING
+      - name: City
+        data_type: STRING
+      - name: State
+        data_type: STRING
+      - name: ZipCode
+        data_type: STRING
+      - name: DCFDiff
+        data_type: FLOAT64
+      - name: DCF
+        data_type: FLOAT64
+      - name: LogoURL
+        data_type: STRING
+      - name: IPODATE
+        data_type: DATE
+      - name: HasDefaultImage
+        data_type: BOOL
+      - name: IsETF
+        data_type: BOOL
+      - name: IsActivelyTrading
+        data_type: BOOL
+      - name: IsADR
+        data_type: BOOL
+      - name: IsFund
+        data_type: BOOL
+
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__company_notes
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, NoteTitle]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: CIK
+        data_type: INT64
+      - name: NoteTitle
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: NoteExchange
+        data_type: STRING
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__employee_count
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, PeriodOfReport]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: CIK
+        data_type: INT64
+      - name: PeriodOfReport
+        data_type: DATE
+        constraints:
+          - type: not_null
+      - name: FilingDate
+        data_type: DATE
+      - name: EmployeeCount
+        data_type: INT64
+      - name: FormType
+        data_type: STRING
+      - name: SourceURL
+        data_type: STRING
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__key_executives
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, ExecName, ExecTitle]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: ExecName
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: ExecTitle
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: ExecPay
+        data_type: FLOAT64
+      - name: PayCurrency
+        data_type: STRING
+      - name: Gender
+        data_type: STRING
+      - name: YearBorn
+        data_type: INT64
+      - name: TitleSince
+        data_type: INT64
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: int_fmp__exec_comp
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [Ticker, ExecNameAndPosition, CompYear]
+
+    columns:
+      - name: Ticker
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: CIK
+        data_type: INT64
+      - name: CompYear
+        data_type: INT64
+        constraints:
+          - type: not_null
+      - name: ExecNameAndPosition
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: Salary
+        data_type: FLOAT64
+      - name: Bonus
+        data_type: FLOAT64
+      - name: StockAward
+        data_type: FLOAT64
+      - name: OptionAward
+        data_type: FLOAT64
+      - name: IncentivePlanComp
+        data_type: FLOAT64
+      - name: AllOtherComp
+        data_type: FLOAT64
+      - name: TotalComp
+        data_type: FLOAT64
+      - name: SourceURL
+        data_type: STRING
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: dim_fmp__countries
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [CountryDimKey]
+
+    columns:
+      - name: CountryDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+
+      - name: CountryCode
+        data_type: STRING
+        constraints:
+          - type: not_null
+
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: dim_fmp__industries
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [IndustryDimKey]
+
+    columns:
+      - name: IndustryDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: IndustryName
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: dim_fmp__sectors
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [SectorDimKey]
+
+    columns:
+      - name: SectorDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: SectorName
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null

@@ -3,7 +3,7 @@
 version: 2
 
 sources:
-  - name: fmp_external_source # This is the source name you'll use in ref() or source()
+  - name: fmp_external_source
     database: public-company-overview
     schema: pco_dataset
     loader: gcloud storage
@@ -264,4 +264,337 @@ sources:
             data_type: STRING
           - name: finalLink
             data_type: STRING
+      - name: stg_fmp__cash_flow_ext
+        external:
+          location: "gs://pco-store/fmp/cash_flow/*.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: date
+            data_type: STRING
+          - name: symbol
+            data_type: STRING
+          - name: reportedCurrency
+            data_type: STRING
+          - name: cik
+            data_type: STRING
+          - name: fillingDate
+            data_type: STRING
+          - name: acceptedDate
+            data_type: STRING
+          - name: calendarYear
+            data_type: STRING
+          - name: period
+            data_type: STRING
+          - name: netIncome
+            data_type: STRING
+          - name: depreciationAndAmortization
+            data_type: STRING
+          - name: deferredIncomeTax
+            data_type: STRING
+          - name: stockBasedCompensation
+            data_type: STRING
+          - name: changeInWorkingCapital
+            data_type: STRING
+          - name: accountsReceivables
+            data_type: STRING
+          - name: inventory
+            data_type: STRING
+          - name: accountsPayables
+            data_type: STRING
+          - name: otherWorkingCapital
+            data_type: STRING
+          - name: otherNonCashItems
+            data_type: STRING
+          - name: netCashProvidedByOperatingActivities
+            data_type: STRING
+          - name: investmentsInPropertyPlantAndEquipment
+            data_type: STRING
+          - name: acquisitionsNet
+            data_type: STRING
+          - name: purchasesOfInvestments
+            data_type: STRING
+          - name: salesMaturitiesOfInvestments
+            data_type: STRING
+          - name: otherInvestingActivites
+            data_type: STRING
+          - name: netCashUsedForInvestingActivites
+            data_type: STRING
+          - name: debtRepayment
+            data_type: STRING
+          - name: commonStockIssued
+            data_type: STRING
+          - name: commonStockRepurchased
+            data_type: STRING
+          - name: dividendsPaid
+            data_type: STRING
+          - name: otherFinancingActivites
+            data_type: STRING
+          - name: netCashUsedProvidedByFinancingActivities
+            data_type: STRING
+          - name: effectOfForexChangesOnCash
+            data_type: STRING
+          - name: netChangeInCash
+            data_type: STRING
+          - name: cashAtEndOfPeriod
+            data_type: STRING
+          - name: cashAtBeginningOfPeriod
+            data_type: STRING
+          - name: operatingCashFlow
+            data_type: STRING
+          - name: capitalExpenditure
+            data_type: STRING
+          - name: freeCashFlow
+            data_type: STRING
+          - name: link
+            data_type: STRING
+          - name: finalLink
+            data_type: STRING
+      - name: stg_fmp__stock_peers_ext
+        external:
+          location: "gs://pco-store/fmp/stock_peers/*.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: symbol
+            data_type: STRING
+          - name: companyName
+            data_type: STRING
+          - name: price
+            data_type: STRING
+          - name: mktCap
+            data_type: STRING
+      - name: stg_fmp__stock_news_ext
+        external:
+          location: "gs://pco-store/fmp/stock_news/*.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: symbol
+            data_type: STRING
+          - name: publishedDate
+            data_type: STRING
+          - name: publisher
+            data_type: STRING
+          - name: title
+            data_type: STRING
+          - name: image
+            data_type: STRING
+          - name: site
+            data_type: STRING
+          - name: text
+            data_type: STRING
+          - name: url
+            data_type: STRING
+      - name: stg_fmp__company_profile_ext
+        external:
+          location: "gs://pco-store/fmp/company_profile/*.csv"
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: symbol
+            data_type: STRING
+          - name: price
+            data_type: STRING
+          - name: beta
+            data_type: STRING
+          - name: volAvg
+            data_type: STRING
+          - name: mktCap
+            data_type: STRING
+          - name: lastDiv
+            data_type: STRING
+          - name: rng
+            data_type: STRING
+          - name: changes
+            data_type: STRING
+          - name: companyName
+            data_type: STRING
+          - name: currency
+            data_type: STRING
+          - name: cik
+            data_type: STRING
+          - name: isin
+            data_type: STRING
+          - name: cusip
+            data_type: STRING
+          - name: exchange
+            data_type: STRING
+          - name: exchangeShortName
+            data_type: STRING
+          - name: industry
+            data_type: STRING
+          - name: website
+            data_type: STRING
+          - name: description
+            data_type: STRING
+          - name: ceo
+            data_type: STRING
+          - name: sector
+            data_type: STRING
+          - name: country
+            data_type: STRING
+          - name: fullTimeEmployees
+            data_type: STRING
+          - name: phone
+            data_type: STRING
+          - name: address
+            data_type: STRING
+          - name: city
+            data_type: STRING
+          - name: state
+            data_type: STRING
+          - name: zip
+            data_type: STRING
+          - name: dcfDiff
+            data_type: STRING
+          - name: dcf
+            data_type: STRING
+          - name: image
+            data_type: STRING
+          - name: ipoDate
+            data_type: STRING
+          - name: defaultImage
+            data_type: STRING
+          - name: isEtf
+            data_type: STRING
+          - name: isActivelyTrading
+            data_type: STRING
+          - name: isAdr
+            data_type: STRING
+          - name: isFund
+            data_type: STRING
+      - name: stg_fmp__company_notes_ext
+        external:
+          location: gs://pco-store/fmp/company_notes/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+
+        columns:
+          - name: cik
+            data_type: STRING
+          - name: symbol
+            data_type: STRING
+          - name: title
+            data_type: STRING
+          - name: exchange
+            data_type: STRING
+      - name: stg_fmp__employee_count_ext
+        external:
+          location: gs://pco-store/fmp/employee_count/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+
+        columns:
+          - name: symbol
+            data_type: STRING
+          - name: cik
+            data_type: STRING
+          - name: acceptanceTime
+            data_type: STRING
+          - name: periodOfReport
+            data_type: STRING
+          - name: companyName
+            data_type: STRING
+          - name: formType
+            data_type: STRING
+          - name: filingDate
+            data_type: STRING
+          - name: employeeCount
+            data_type: STRING
+          - name: source
+            data_type: STRING
+      - name: stg_fmp__key_executives_ext
+        external:
+          location: gs://pco-store/fmp/key_executives/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: title
+            data_type: STRING
+          - name: name
+            data_type: STRING
+          - name: pay
+            data_type: STRING
+          - name: currencyPay
+            data_type: STRING
+          - name: gender
+            data_type: STRING
+          - name: yearBorn
+            data_type: STRING
+          - name: titleSince
+            data_type: STRING
+      - name: stg_fmp__exec_comp_ext
+        external:
+          location: gs://pco-store/fmp/exec_comp/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: cik
+            data_type: STRING
+          - name: symbol
+            data_type: STRING
+          - name: companyName
+            data_type: STRING
+          - name: filingDate
+            data_type: STRING
+          - name: acceptedDate
+            data_type: STRING
+          - name: nameAndPosition
+            data_type: STRING
+          - name: year
+            data_type: STRING
+          - name: salary
+            data_type: STRING
+          - name: bonus
+            data_type: STRING
+          - name: stockAward
+            data_type: STRING
+          - name: optionAward
+            data_type: STRING
+          - name: incentivePlanCompensation
+            data_type: STRING
+          - name: allOtherCompensation
+            data_type: STRING
+          - name: total
+            data_type: STRING
+          - name: link
+            data_type: STRING
+      - name: stg_fmp__countries_ext
+        external:
+          location: gs://pco-store/fmp/countries/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: country
+            data_type: STRING
+      - name: stg_fmp__industries_ext
+        external:
+          location: gs://pco-store/fmp/industries/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: industry
+            data_type: STRING
+      - name: stg_fmp__sectors_ext
+        external:
+          location: gs://pco-store/fmp/sectors/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: sector
+            data_type: STRING
+
+
 
