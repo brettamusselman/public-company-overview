@@ -10,7 +10,7 @@ sources:
     tables:
       - name: stg_yfinance__hist_ticker_daily # Name of the BQ external table
         external:
-          location: "gs://dbt-testing/yfinance/hist_ticker/daily/*.csv" # Path to your CSV files
+          location: "gs://pco-store/yfinance/hist_ticker/daily/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -31,7 +31,7 @@ sources:
             data_type: STRING
       - name: stg_yfinance__hist_ticker_interval # Name of the BQ external table
         external:
-          location: "gs://dbt-testing/yfinance/hist_ticker/interval/*.csv" # Path to your CSV files
+          location: "gs://pco-store/yfinance/hist_ticker/interval/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -56,7 +56,7 @@ sources:
             data_type: STRING
       - name: stg_yfinance__hist_tickers_interval # Name of the BQ external table
         external:
-          location: "gs://dbt-testing/yfinance/hist_tickers/interval/*.csv" # Path to your CSV files
+          location: "gs://pco-store/yfinance/hist_tickers/interval/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 

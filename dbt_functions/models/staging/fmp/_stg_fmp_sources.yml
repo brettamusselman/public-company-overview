@@ -11,7 +11,7 @@ sources:
       - name: stg_fmp__hist_ticker_daily # Name of the BQ external table
         description: "External table for FMP hist ticker CSV files from GCS."
         external:
-          location: "gs://dbt-testing/fmp/hist_ticker/daily/*.csv" # Path to your CSV files
+          location: "gs://pco-store/fmp/hist_ticker/daily/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -38,7 +38,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__tickers_ext 
         external:
-          location: "gs://dbt-testing/fmp/tickers/*.csv" 
+          location: "gs://pco-store/fmp/tickers/*.csv" 
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -58,7 +58,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__exchanges_ext 
         external:
-          location: "gs://dbt-testing/fmp/exchanges/*.csv" 
+          location: "gs://pco-store/fmp/exchanges/*.csv" 
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -67,7 +67,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__balance_sheet_ext        
         external:
-          location: "gs://dbt-testing/fmp/balance_sheet/*.csv"
+          location: "gs://pco-store/fmp/balance_sheet/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -182,7 +182,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__income_statement_ext
         external:
-          location: "gs://dbt-testing/fmp/income_statement/*.csv"
+          location: "gs://pco-store/fmp/income_statement/*.csv"
           options:
             format: csv
             skip_leading_rows: 1

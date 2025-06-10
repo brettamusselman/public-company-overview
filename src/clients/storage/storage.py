@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-DEFAULT_BUCKET = "dbt-testing"
+DEFAULT_BUCKET = "pco-store"
 
 class GCS_Client_Wrapper:
     def __init__(self, bucket_name: str = DEFAULT_BUCKET):
