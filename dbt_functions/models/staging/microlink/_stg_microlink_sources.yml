@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: microlink_external_source
+    database: public-company-overview
+    schema: pco_dataset
+    loader: gcloud storage
+
+    tables:
+      - name: stg_microlink__text_ext
+        external:
+          location: gs://pco-store/microlink/text/*.csv
+          options:
+            format: csv  
+            skip_leading_rows: 0
+            allow_quoted_newlines: true
+            field_delimiter: '\t'
+            quote: ''        
+        columns:
+          - name: json_raw
+            data_type: STRING
+

@@ -785,3 +785,87 @@ models:
         data_type: TIMESTAMP
         constraints:
           - type: not_null
+  - name: dim_fmp__countries
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [CountryDimKey]
+
+    columns:
+      - name: CountryDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+
+      - name: CountryCode
+        data_type: STRING
+        constraints:
+          - type: not_null
+
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: dim_fmp__industries
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [IndustryDimKey]
+
+    columns:
+      - name: IndustryDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: IndustryName
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+  - name: dim_fmp__sectors
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [SectorDimKey]
+
+    columns:
+      - name: SectorDimKey
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: SectorName
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: FileTimestamp
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null
+      - name: DBTLoadedAtStaging
+        data_type: TIMESTAMP
+        constraints:
+          - type: not_null

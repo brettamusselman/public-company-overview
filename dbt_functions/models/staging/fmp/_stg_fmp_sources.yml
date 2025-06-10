@@ -11,7 +11,7 @@ sources:
       - name: stg_fmp__hist_ticker_daily # Name of the BQ external table
         description: "External table for FMP hist ticker CSV files from GCS."
         external:
-          location: "gs://dbt-testing/fmp/hist_ticker/daily/*.csv" # Path to your CSV files
+          location: "gs://pco-store/fmp/hist_ticker/daily/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -38,7 +38,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__tickers_ext 
         external:
-          location: "gs://dbt-testing/fmp/tickers/*.csv" 
+          location: "gs://pco-store/fmp/tickers/*.csv" 
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -58,7 +58,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__exchanges_ext 
         external:
-          location: "gs://dbt-testing/fmp/exchanges/*.csv" 
+          location: "gs://pco-store/fmp/exchanges/*.csv" 
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -67,7 +67,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__balance_sheet_ext        
         external:
-          location: "gs://dbt-testing/fmp/balance_sheet/*.csv"
+          location: "gs://pco-store/fmp/balance_sheet/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -182,7 +182,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__income_statement_ext
         external:
-          location: "gs://dbt-testing/fmp/income_statement/*.csv"
+          location: "gs://pco-store/fmp/income_statement/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -266,7 +266,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__cash_flow_ext
         external:
-          location: "gs://dbt-testing/fmp/cash_flow/*.csv"
+          location: "gs://pco-store/fmp/cash_flow/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -353,7 +353,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__stock_peers_ext
         external:
-          location: "gs://dbt-testing/fmp/stock_peers/*.csv"
+          location: "gs://pco-store/fmp/stock_peers/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -368,7 +368,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__stock_news_ext
         external:
-          location: "gs://dbt-testing/fmp/stock_news/*.csv"
+          location: "gs://pco-store/fmp/stock_news/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -391,7 +391,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__company_profile_ext
         external:
-          location: "gs://dbt-testing/fmp/company_profile/*.csv"
+          location: "gs://pco-store/fmp/company_profile/*.csv"
           options:
             format: csv
             skip_leading_rows: 1
@@ -470,7 +470,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__company_notes_ext
         external:
-          location: gs://dbt-testing/fmp/company_notes/*.csv
+          location: gs://pco-store/fmp/company_notes/*.csv
           options:
             format: csv
             skip_leading_rows: 1
@@ -486,7 +486,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__employee_count_ext
         external:
-          location: gs://dbt-testing/fmp/employee_count/*.csv
+          location: gs://pco-store/fmp/employee_count/*.csv
           options:
             format: csv
             skip_leading_rows: 1
@@ -512,7 +512,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__key_executives_ext
         external:
-          location: gs://dbt-testing/fmp/key_executives/*.csv
+          location: gs://pco-store/fmp/key_executives/*.csv
           options:
             format: csv
             skip_leading_rows: 1
@@ -533,7 +533,7 @@ sources:
             data_type: STRING
       - name: stg_fmp__exec_comp_ext
         external:
-          location: gs://dbt-testing/fmp/exec_comp/*.csv
+          location: gs://pco-store/fmp/exec_comp/*.csv
           options:
             format: csv
             skip_leading_rows: 1
@@ -568,5 +568,33 @@ sources:
             data_type: STRING
           - name: link
             data_type: STRING
+      - name: stg_fmp__countries_ext
+        external:
+          location: gs://pco-store/fmp/countries/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: country
+            data_type: STRING
+      - name: stg_fmp__industries_ext
+        external:
+          location: gs://pco-store/fmp/industries/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: industry
+            data_type: STRING
+      - name: stg_fmp__sectors_ext
+        external:
+          location: gs://pco-store/fmp/sectors/*.csv
+          options:
+            format: csv
+            skip_leading_rows: 1
+        columns:
+          - name: sector
+            data_type: STRING
+
 
 

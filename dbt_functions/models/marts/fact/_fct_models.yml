@@ -540,10 +540,6 @@ models:
       - name: RecencyRank
         data_type: INT64
   - name: fct__company_profile
-    description: >
-      Latest company-profile snapshot per ticker (one row per TickerDimKey).
-      Populated from the most-recent file ingested from FMP.
-
     config:
       contract:
         enforced: true
@@ -562,6 +558,34 @@ models:
             to: ref('dim__tickers')
             to_columns: [TickerDimKey]
 
+      - name: ExchangeDimKey
+        data_type: STRING
+        constraints:
+          - type: foreign_key
+            to: ref('dim__exchanges')
+            to_columns: [ExchangeDimKey]
+
+      - name: SectorDimKey
+        data_type: STRING
+        constraints:
+          - type: foreign_key
+            to: ref('dim__sectors')
+            to_columns: [SectorDimKey]
+
+      - name: IndustryDimKey
+        data_type: STRING
+        constraints:
+          - type: foreign_key
+            to: ref('dim__industries')
+            to_columns: [IndustryDimKey]
+
+      - name: CountryDimKey
+        data_type: STRING
+        constraints:
+          - type: foreign_key
+            to: ref('dim__countries')
+            to_columns: [CountryDimKey]
+
       - name: CompanyName
         data_type: STRING
       - name: Price
@@ -578,7 +602,6 @@ models:
         data_type: STRING
       - name: PriceChange
         data_type: FLOAT64
-
       - name: Currency
         data_type: STRING
       - name: CIK
@@ -589,26 +612,8 @@ models:
         data_type: STRING
       - name: Exchange
         data_type: STRING
-      - name: ExchangeShortName
-        data_type: STRING
-
-      - name: Industry
-        data_type: STRING
-      - name: Sector
-        data_type: STRING
-      - name: Website
-        data_type: STRING
-      - name: Description
-        data_type: STRING
-      - name: CEO
-        data_type: STRING
-      - name: Country
-        data_type: STRING
-
       - name: FullTimeEmployees
         data_type: INT64
-      - name: Phone
-        data_type: STRING
       - name: Address
         data_type: STRING
       - name: City
@@ -617,16 +622,22 @@ models:
         data_type: STRING
       - name: ZipCode
         data_type: STRING
-
+      - name: Phone
+        data_type: STRING
+      - name: Website
+        data_type: STRING
+      - name: Description
+        data_type: STRING
+      - name: CEO
+        data_type: STRING
+      - name: IPODATE
+        data_type: DATE
       - name: DCFDiff
         data_type: FLOAT64
       - name: DCF
         data_type: FLOAT64
       - name: LogoURL
         data_type: STRING
-
-      - name: IPODATE
-        data_type: DATE
       - name: HasDefaultImage
         data_type: BOOL
       - name: IsETF
@@ -668,17 +679,18 @@ models:
           - type: foreign_key
             to: ref('dim__tickers')
             to_columns: [TickerDimKey]
-
+      - name: ExchangeDimKey
+        data_type: STRING
+        constraints:
+          - type: foreign_key
+            to: ref('dim__exchanges')  
+            to_columns: [ExchangeDimKey]
       - name: NoteTitle
         data_type: STRING
         constraints:
           - type: not_null
-
-      - name: NoteExchange
-        data_type: STRING
       - name: CIK
         data_type: INT64
-
       - name: FileTimestamp
         data_type: TIMESTAMP
         constraints:
@@ -834,6 +846,35 @@ models:
         data_type: TIMESTAMP
         constraints:
           - type: not_null
+      - name: DataSource
+        data_type: STRING
+      - name: RecencyRank
+        data_type: INT64
+  - name: fct__websites
+    config:
+      contract:
+        enforced: true
+      on_schema_change: append_new_columns
+
+    constraints:
+      - type: primary_key
+        columns: [WebsiteURL]
+
+    columns:
+      - name: WebsiteURL
+        data_type: STRING
+        constraints:
+          - type: not_null
+      - name: Title
+        data_type: STRING
+      - name: Description
+        data_type: STRING
+      - name: Publisher
+        data_type: STRING
+      - name: PublishDateISO
+        data_type: STRING
+      - name: JsonFilePath
+        data_type: STRING
       - name: DataSource
         data_type: STRING
       - name: RecencyRank

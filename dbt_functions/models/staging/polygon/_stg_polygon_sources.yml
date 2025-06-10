@@ -11,7 +11,7 @@ sources:
       - name: stg_polygon__hist_ticker_interval # Name of the BQ external table
         description: "External table for Polygon hist ticker CSV files from GCS."
         external:
-          location: "gs://dbt-testing/polygon/hist_ticker/interval/*.csv" # Path to your CSV files
+          location: "gs://pco-store/polygon/hist_ticker/interval/*.csv" # Path to your CSV files
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -36,7 +36,7 @@ sources:
             data_type: STRING
       - name: stg_polygon__exchanges_ext
         external:
-          location: "gs://dbt-testing/polygon/exchanges/*.csv"
+          location: "gs://pco-store/polygon/exchanges/*.csv"
           options:
             format: csv 
             skip_leading_rows: 1 
@@ -63,7 +63,7 @@ sources:
             data_type: STRING
       - name: stg_polygon__tickers_ext
         external:
-          location: "gs://dbt-testing/polygon/tickers/*.csv"
+          location: "gs://pco-store/polygon/tickers/*.csv"
           options:
             format: csv 
             skip_leading_rows: 1 

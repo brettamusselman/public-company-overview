@@ -16,9 +16,18 @@ dim_ticker AS (
     FROM {{ ref('dim__tickers') }}
 ),
 
+dim_exchange AS (
+    SELECT 
+        ExchangeDimKey, 
+        ExchangeAcronym,
+        SourceSystem
+    FROM {{ ref('dim__exchanges') }}
+),
+
 joined AS (
     SELECT
-        d.TickerDimKey,
+        t.TickerDimKey,
+        e.ExchangeDimKey,           
         s.NoteTitle,
         s.NoteExchange,
         s.CIK,
@@ -26,8 +35,10 @@ joined AS (
         s.DBTLoadedAtStaging,
         s.DataSource
     FROM src s
-    LEFT JOIN dim_ticker d
-      ON s.Ticker = d.Ticker
+    LEFT JOIN dim_ticker   t ON s.Ticker       = t.Ticker
+    LEFT JOIN dim_exchange e 
+        ON s.NoteExchange = e.ExchangeAcronym
+        AND e.SourceSystem = s.DataSource 
 ),
 
 ranked AS (
@@ -42,8 +53,8 @@ ranked AS (
 
 SELECT
     TickerDimKey,
+    ExchangeDimKey,
     NoteTitle,
-    NoteExchange,
     CIK,
     FileTimestamp,
     DBTLoadedAtStaging,
