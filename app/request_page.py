@@ -11,8 +11,10 @@ logger = logging.getLogger(__name__)
 # Instantiate the API client
 api_client = API()
 
-# Mock list of tickers; ideally, fetch this from BigQuery or your backend
-AVAILABLE_TICKERS = ["AAPL", "GOOG", "MSFT", "TSLA", "AMZN"]
+# Mock list of tickers; ideally, fetch this from BigQuery
+from bq.bq import BQ_Client
+bq_client = BQ_Client()
+AVAILABLE_TICKERS = bq_client.get_available_tickers()
 
 # Create Dash app
 def create_request_app(server: Flask) -> dash.Dash:
@@ -64,10 +66,10 @@ def create_request_app(server: Flask) -> dash.Dash:
         try:
             logger.info(f"Triggering standard workflow for {ticker}")
             result = api_client.invoke_standard_workflow(ticker=ticker)
-            return f"✅ Successfully triggered standard workflow for {ticker}: {result}"
+            return f"Successfully triggered standard workflow for {ticker}: {result}"
         except Exception as e:
             logger.error(f"Failed to trigger workflow for {ticker}: {e}")
-            return f"❌ Error: {str(e)}"
+            return f"Error: {str(e)}"
 
     return dash_app
 
